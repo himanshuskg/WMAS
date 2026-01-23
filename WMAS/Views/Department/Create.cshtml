@@ -1,0 +1,13 @@
+﻿@model WMAS.Models.Department
+
+<h2>Create Department</h2>
+
+<form asp-action="Create" method="post">
+    <div>
+        <label asp-for="DepartmentName">Department Name</label>
+        <input asp-for="DepartmentName" />
+        <span asp-validation-for="DepartmentName"></span>
+    </div>
+
+    <button type="submit">Save</button>
+</form>

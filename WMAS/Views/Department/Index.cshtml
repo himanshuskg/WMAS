@@ -1,0 +1,52 @@
+﻿@model IEnumerable<WMAS.Models.Department>
+
+<div class="container mt-4">
+
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Departments</h2>
+
+        <a asp-action="Create" class="btn btn-outline-primary">+ Add Department</a>
+    </div>
+
+    <!-- Table -->
+    <div class="card">
+        <div class="card-body p-0">
+
+            <table class="table table-striped table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 70%;">Department Name</th>
+                        <th style="width: 30%;" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="2" class="text-center py-4">
+                                No departments found.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.DepartmentName</td>
+
+                                <td class="text-end"><a asp-action="Edit" asp-route-id="@item.DepartmentId" class="btn btn-sm btn-outline-secondary me-1"> Edit</a>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(@item.DepartmentId,'@item.DepartmentName','Delete','Department')">Delete</button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@await Html.PartialAsync("_DeleteModal")
