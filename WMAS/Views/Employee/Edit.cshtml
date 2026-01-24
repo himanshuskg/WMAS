@@ -1,0 +1,37 @@
+﻿@model WMAS.Models.Employee
+
+<div class="container mt-4">
+    <h2>Edit Employee</h2>
+
+    <form asp-action="Edit" method="post">
+        <input type="hidden" asp-for="EmployeeId" />
+
+        <div class="mb-3">
+            <label asp-for="FullName" class="form-label"></label>
+            <input asp-for="FullName" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Phone" class="form-label"></label>
+            <input asp-for="Phone" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Department</label>
+            <select asp-for="DepartmentId" asp-items="ViewBag.Departments" class="form-select"></select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Designation</label>
+            <select asp-for="DesignationId" asp-items="ViewBag.Designations" class="form-select"></select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Update</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>

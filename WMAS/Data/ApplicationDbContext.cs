@@ -17,6 +17,28 @@ namespace WMAS.Data
         public DbSet<Department> Departments { get; set; }
         public DbSet<Designation> Designations { get; set; }
         public DbSet<Employee> Employees { get; set; }
+        public DbSet<Attendance> Attendances{ get; set; }
+        public DbSet<Leave> Leaves { get; set; }
+        public DbSet<Salary> Salaries{ get; set; }
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.Entity<Salary>(entity =>
+            {
+                entity.Property(e => e.BasicPay)
+                      .HasPrecision(18, 2);
+
+                entity.Property(e => e.Allowances)
+                      .HasPrecision(18, 2);
+
+                entity.Property(e => e.Deductions)
+                      .HasPrecision(18, 2);
+
+                entity.Property(e => e.NetSalary)
+                      .HasPrecision(18, 2);
+            });
+        }
 
 
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)

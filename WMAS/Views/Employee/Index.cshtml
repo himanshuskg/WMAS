@@ -1,0 +1,53 @@
+﻿@model IEnumerable<WMAS.Models.Employee>
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Employees</h2>
+        <a asp-action="Create" class="btn btn-outline-primary">+ Add Employee</a>
+    </div>
+
+    <div class="card">
+        <div class="card-body p-0">
+            <table class="table table-striped table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Department</th>
+                        <th>Designation</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-4">
+                                No employees found.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.FullName</td>
+                                <td>@item.Email</td>
+                                <td>@item.Department.DepartmentName</td>
+                                <td>@item.Designation.Title</td>
+                                <td class="text-end">
+                                    <a asp-action="Edit" asp-route-id="@item.EmployeeId" class="btn btn-sm btn-outline-secondary me-1">Edit</a>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(@item.EmployeeId, '@item.FullName', 'Delete', 'Employee')">Delete</button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@await Html.PartialAsync("_DeleteModal")

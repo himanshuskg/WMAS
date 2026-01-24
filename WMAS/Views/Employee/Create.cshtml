@@ -1,0 +1,42 @@
+﻿@model WMAS.Models.Employee
+
+<div class="container mt-4">
+    <h2>Add Employee</h2>
+
+    <form asp-action="Create" method="post">
+        <div class="mb-3">
+            <label asp-for="FullName" class="form-label"></label>
+            <input asp-for="FullName" class="form-control" />
+            <span asp-validation-for="FullName" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Phone" class="form-label"></label>
+            <input asp-for="Phone" class="form-control" />
+            <span asp-validation-for="Phone" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Department</label>
+            <select asp-for="DepartmentId" asp-items="ViewBag.Departments" class="form-select">
+                <option value="0">-- Select Department --</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Designation</label>
+            <select asp-for="DesignationId" asp-items="ViewBag.Designations" class="form-select">
+                <option value="0">-- Select Department --</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>

@@ -1,0 +1,47 @@
+﻿@model IEnumerable<WMAS.Models.Designation>
+
+<div class="container mt-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Designations</h2>
+        <a asp-action="Create" class="btn btn-outline-primary">+ Add Designation</a>
+    </div>
+
+    <div class="card">
+        <div class="card-body p-0">
+            <table class="table table-striped table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Title</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="2" class="text-center py-4">
+                                No designations found.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.Title</td>
+                                <td class="text-end"> 
+                                    <a asp-action="Edit" asp-route-id="@item.DesignationId" class="btn btn-sm btn-outline-secondary me-1">Edit</a>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(@item.DesignationId, '@item.Title', 'Delete', 'Designation')"> Delete </button>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@await Html.PartialAsync("_DeleteModal")
