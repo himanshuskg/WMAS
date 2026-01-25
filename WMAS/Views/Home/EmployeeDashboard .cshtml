@@ -1,21 +1,15 @@
 ﻿@{
+    ViewData["Title"] = "Dashboard";
     var attendance = ViewBag.Attendance as WMAS.Models.Attendance;
+    var notes = ViewBag.Notes as List<WMAS.Models.Note>;
 }
 
 <div class="container mt-4">
 
-    <h2>Welcome</h2>
+    <h2>Dashboard</h2>
+    <p class="text-muted">Welcome back</p>
 
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger">@TempData["Error"]</div>
-    }
-
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success">@TempData["Success"]</div>
-    }
-
+    <!-- Attendance Card -->
     <div class="card mt-3">
         <div class="card-body">
 
@@ -37,9 +31,7 @@
 
                 @if (attendance.CheckOutTime == null)
                 {
-                    var elapsed = attendance.CheckInTime.HasValue
-                    ? (DateTime.Now - attendance.CheckInTime.Value)
-                    : TimeSpan.Zero;
+                    var elapsed = attendance.CheckInTime.HasValue ? (DateTime.Now - attendance.CheckInTime.Value) : TimeSpan.Zero;
 
                     <p>
                         <strong>Elapsed time:</strong>
@@ -52,10 +44,9 @@
                 }
                 else
                 {
-                    var total = attendance.CheckOutTime.HasValue && attendance.CheckInTime.HasValue
-                    ? (attendance.CheckOutTime.Value - attendance.CheckInTime.Value)
-                    : TimeSpan.Zero;
-
+                 
+                   var total = attendance.CheckOutTime.HasValue && attendance.CheckInTime.HasValue ? (attendance.CheckOutTime.Value - attendance.CheckInTime.Value) : TimeSpan.Zero;
+                 
                     <p>
                         <strong>Checked out:</strong>
                         @attendance.CheckOutTime?.ToShortTimeString()
@@ -69,27 +60,17 @@
             }
         </div>
     </div>
-</div>
-@if (User.IsInRole("Employee"))
-{
+
+    <!-- Notes Card -->
     <div class="card mt-4">
         <div class="card-body">
 
             <h5>My Notes</h5>
 
             <form asp-action="AddNote" method="post" class="mb-3">
-                <textarea name="content"
-                      class="form-control"
-                      rows="2"
-                      placeholder="Write something to remember..."
-                      maxlength="500"></textarea>
-
+                <textarea name="content" class="form-control" rows="2" placeholder="Write something to remember..." maxlength="500"></textarea>
                 <button class="btn btn-primary mt-2">Add Note</button>
             </form>
-
-            @{
-                var notes = ViewBag.Notes as List<WMAS.Models.Note>;
-            }
 
             @if (notes != null && notes.Any())
             {
@@ -98,11 +79,7 @@
                     {
                         <li class="list-group-item d-flex justify-content-between">
                             <span>@note.Content</span>
-                            <a asp-action="DeleteNote"
-                               asp-route-id="@note.NoteId"
-                               class="text-danger">
-                                Delete
-                            </a>
+                            <a asp-action="DeleteNote" asp-route-id="@note.NoteId" class="text-danger">Delete</a>
                         </li>
                     }
                 </ul>
@@ -113,5 +90,4 @@
             }
         </div>
     </div>
-}
-
+</div>

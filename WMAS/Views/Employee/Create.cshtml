@@ -35,6 +35,15 @@
                 <option value="0">-- Select Department --</option>
             </select>
         </div>
+        <div class="form-check mt-3">
+            <input class="form-check-input" asp-for="HasSystemAccess" />
+            <label class="form-check-label">Give system access</label>
+        </div>
+
+        <div class="form-check mt-2">
+            <input class="form-check-input" asp-for="IsActive" checked />
+            <label class="form-check-label">Active</label>
+        </div>
 
         <button type="submit" class="btn btn-primary">Save</button>
         <a asp-action="Index" class="btn btn-secondary">Cancel</a>

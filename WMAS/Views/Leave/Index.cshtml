@@ -1,0 +1,29 @@
+﻿@model IEnumerable<WMAS.Models.Leave>
+
+<h2>My Leaves</h2>
+
+<a asp-action="Apply" class="btn btn-success mb-3">
+    Apply Leave
+</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>From</th>
+            <th>To</th>
+            <th>Type</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var leave in Model)
+        {
+            <tr>
+                <td>@leave.FromDate.ToShortDateString()</td>
+                <td>@leave.ToDate.ToShortDateString()</td>
+                <td>@leave.LeaveType</td>
+                <td>@leave.Status</td>
+            </tr>
+        }
+    </tbody>
+</table>

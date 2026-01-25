@@ -30,5 +30,10 @@ namespace WMAS.Models
         public Designation Designation { get; set; }
 
         public string? UserId { get; set; }
+
+        // Access control
+        public bool HasSystemAccess { get; set; } = false;
+
+        public bool IsActive { get; set; } = true;
     }
 }

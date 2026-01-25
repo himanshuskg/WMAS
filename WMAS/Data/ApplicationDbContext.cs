@@ -20,6 +20,7 @@ namespace WMAS.Data
         public DbSet<Attendance> Attendances{ get; set; }
         public DbSet<Leave> Leaves { get; set; }
         public DbSet<Salary> Salaries{ get; set; }
+        public DbSet<Note> Notes{ get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

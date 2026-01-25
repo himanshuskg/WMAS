@@ -39,6 +39,7 @@
                                 <td>@item.Designation.Title</td>
                                 <td class="text-end">
                                     <a asp-action="Edit" asp-route-id="@item.EmployeeId" class="btn btn-sm btn-outline-secondary me-1">Edit</a>
+                                    <a asp-action="Details" asp-route-id="@item.EmployeeId" class="btn btn-sm btn-outline-secondary me-1">Details</a>
                                     <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(@item.EmployeeId, '@item.FullName', 'Delete', 'Employee')">Delete</button>
                                 </td>
                             </tr>

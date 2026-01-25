@@ -1,0 +1,32 @@
+﻿@model WMAS.Models.Leave
+
+<h2>Apply Leave</h2>
+
+<form asp-action="Apply" method="post">
+
+    <div class="mb-3">
+        <label>From</label>
+        <input asp-for="FromDate" type="date" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>To</label>
+        <input asp-for="ToDate" type="date" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Leave Type</label>
+        <select asp-for="LeaveType" class="form-control">
+            <option>Casual</option>
+            <option>Sick</option>
+            <option>Emergency</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label>Reason</label>
+        <textarea asp-for="Reason" class="form-control"></textarea>
+    </div>
+
+    <button class="btn btn-primary">Apply</button>
+</form>

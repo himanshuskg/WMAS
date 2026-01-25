@@ -1,0 +1,44 @@
+﻿@model WMAS.Models.Employee
+
+<h2>Employee Details</h2>
+
+<div class="card mt-3">
+    <div class="card-body">
+
+        <h5>Basic Information</h5>
+        <p><strong>Name:</strong> @Model.FullName</p>
+        <p><strong>Email:</strong> @Model.Email</p>
+        <p><strong>Phone:</strong> @Model.Phone</p>
+        <p><strong>Department:</strong> @Model.Department?.DepartmentName</p>
+        <p><strong>Designation:</strong> @Model.Designation?.Title</p>
+
+        <hr />
+
+        <h5>System Status</h5>
+        <p>
+            <strong>System Access:</strong>
+            @(Model.HasSystemAccess ? "Yes" : "No")
+        </p>
+
+        <p>
+            <strong>Account Status:</strong>
+            @(Model.IsActive ? "Active" : "Inactive")
+        </p>
+
+        <hr />
+
+        <div class="d-flex gap-2">
+
+            @if (Model.HasSystemAccess)
+            {
+                <form asp-action="ResetPassword" asp-route-id="@Model.EmployeeId" method="post">
+                    <button class="btn btn-warning">Reset Password</button>
+                </form>
+            }
+
+            <a asp-action="Edit" asp-route-id="@Model.EmployeeId" class="btn btn-primary">Edit</a>
+            <a asp-action="Index" class="btn btn-secondary">Back</a>
+        </div>
+
+    </div>
+</div>
