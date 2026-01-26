@@ -6,5 +6,7 @@ namespace WMAS.Models
     {
         public int DesignationId { get; set; }
         public string Title { get; set; }
+        public bool IsActive { get; set; } = true;
+
     }
 }

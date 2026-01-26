@@ -27,18 +27,18 @@ namespace WMAS.Controllers
         {
             var userId = _userManager.GetUserId(User);
 
-            var employee = await _context.Employees
-                .FirstOrDefaultAsync(e => e.UserId == userId);
+            var employee = await _context.Employees.FirstOrDefaultAsync(e => e.UserId == userId);
 
-            if (employee == null)
-                return Unauthorized();
+            if (employee == null) return Unauthorized();
+            if (!employee.IsActive)
+            {
+                TempData["Error"] = "Your account is inactive.";
+                return RedirectToAction("Index", "Home");
+            }
 
             var today = DateTime.Today;
 
-            var attendance = await _context.Attendances
-                .FirstOrDefaultAsync(a =>
-                    a.EmployeeId == employee.EmployeeId &&
-                    a.Date == today);
+            var attendance = await _context.Attendances.FirstOrDefaultAsync(a => a.EmployeeId == employee.EmployeeId && a.Date == today);
 
             if (attendance != null)
             {
@@ -72,13 +72,14 @@ namespace WMAS.Controllers
 
             if (employee == null)
                 return Unauthorized();
-
+            if (!employee.IsActive)
+            {
+                TempData["Error"] = "Your account is inactive.";
+                return RedirectToAction("Index", "Home");
+            }
             var today = DateTime.Today;
 
-            var attendance = await _context.Attendances
-                .FirstOrDefaultAsync(a =>
-                    a.EmployeeId == employee.EmployeeId &&
-                    a.Date == today);
+            var attendance = await _context.Attendances.FirstOrDefaultAsync(a => a.EmployeeId == employee.EmployeeId && a.Date == today);
 
             if (attendance == null || attendance.CheckInTime == null)
             {

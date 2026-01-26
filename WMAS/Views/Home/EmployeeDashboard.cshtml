@@ -1,8 +1,16 @@
 ﻿@{
     ViewData["Title"] = "Dashboard";
-    var attendance = ViewBag.Attendance as WMAS.Models.Attendance;
-    var notes = ViewBag.Notes as List<WMAS.Models.Note>;
+    var attendance = ViewBag.Attendance as Attendance;
+    var notes = ViewBag.Notes as List<Note>;
 }
+@if (ViewBag.ShowPasswordWarning == true)
+{
+    <div class="alert alert-warning">
+        You are using a system-generated password.
+        Please change your password.
+    </div>
+}
+
 
 <div class="container mt-4">
 

@@ -30,7 +30,17 @@
             <label class="form-label">Designation</label>
             <select asp-for="DesignationId" asp-items="ViewBag.Designations" class="form-select"></select>
         </div>
+        <div class="form-check">
+            <input asp-for="HasSystemAccess" class="form-check-input" />
+            <label class="form-check-label">Give System Access</label>
+        </div>
 
+        @if (Model.HasSystemAccess && string.IsNullOrEmpty(Model.UserId))
+        {
+            <div class="alert alert-info mt-2">
+                System account will be created on save.
+            </div>
+        }
         <button type="submit" class="btn btn-primary">Update</button>
         <a asp-action="Index" class="btn btn-secondary">Cancel</a>
     </form>

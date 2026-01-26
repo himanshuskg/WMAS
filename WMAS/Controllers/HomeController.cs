@@ -52,16 +52,10 @@ namespace WMAS.Controllers
 
                 var today = DateTime.Today;
 
-                var attendance = await _context.Attendances
-                    .FirstOrDefaultAsync(a =>
-                        a.EmployeeId == employee.EmployeeId &&
-                        a.Date == today);
+                var attendance = await _context.Attendances.FirstOrDefaultAsync(a => a.EmployeeId == employee.EmployeeId && a.Date == today);
+                var notes = await _context.Notes.Where(n => n.UserId == userId).OrderByDescending(n => n.CreatedOn).ToListAsync();
 
-                var notes = await _context.Notes
-                    .Where(n => n.UserId == userId)
-                    .OrderByDescending(n => n.CreatedOn)
-                    .ToListAsync();
-
+                ViewBag.ShowPasswordWarning = employee != null && !employee.IsPasswordChanged;
                 ViewBag.Attendance = attendance;
                 ViewBag.Notes = notes;
 
@@ -100,8 +94,7 @@ namespace WMAS.Controllers
         {
             var userId = _userManager.GetUserId(User);
 
-            var note = await _context.Notes
-                .FirstOrDefaultAsync(n => n.NoteId == id && n.UserId == userId);
+            var note = await _context.Notes.FirstOrDefaultAsync(n => n.NoteId == id && n.UserId == userId);
 
             if (note != null)
             {

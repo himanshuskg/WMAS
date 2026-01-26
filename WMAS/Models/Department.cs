@@ -9,5 +9,7 @@ namespace WMAS.Models
         [Required]
         [StringLength(100)]
         public string DepartmentName { get; set; }
+        public bool IsActive { get; set; } = true;
+
     }
 }

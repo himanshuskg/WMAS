@@ -44,9 +44,9 @@ namespace WMAS.Controllers
         }
 
         // -------------------- CREATE --------------------
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            LoadDropdowns();
+            await LoadDropdownsAsync();
             return View();
         }
 
@@ -56,28 +56,32 @@ namespace WMAS.Controllers
         {
             if (!ModelState.IsValid)
             {
-                LoadDropdowns();
+                await LoadDropdownsAsync();
                 return View(employee);
             }
 
-            if (employee.HasSystemAccess)
-            {
-                var result = await CreateEmployeeUserAsync(employee);
-                if (!result.Success)
-                {
-                    ModelState.AddModelError("", "Failed to create system user.");
-                    LoadDropdowns();
-                    return View(employee);
-                }
-
-                TempData["Success"] = $"Employee created. Temporary password: {result.Password}";
-            }
-
+            // FIRST save employee
             _context.Employees.Add(employee);
             await _context.SaveChangesAsync();
 
+            // THEN create system access if needed
+            if (employee.HasSystemAccess)
+            {
+                var result = await CreateOrResetUserAsync(employee);
+
+                if (!result.success)
+                {
+                    ModelState.AddModelError("", "Failed to create system user.");
+                    await LoadDropdownsAsync();
+                    return View(employee);
+                }
+
+                TempData["Success"] = $"Employee created. Temporary password: {result.password}";
+                await _context.SaveChangesAsync(); // save UserId + password info
+            }
             return RedirectToAction(nameof(Index));
         }
+
 
         // -------------------- EDIT --------------------
         public async Task<IActionResult> Edit(int id)
@@ -86,7 +90,7 @@ namespace WMAS.Controllers
             if (employee == null)
                 return NotFound();
 
-            LoadDropdowns();
+            await LoadDropdownsAsync();
             return View(employee);
         }
 
@@ -100,24 +104,11 @@ namespace WMAS.Controllers
 
             if (!ModelState.IsValid)
             {
-                LoadDropdowns();
+                await LoadDropdownsAsync();
                 return View(model);
             }
 
-            // Grant access later
-            if (!employee.HasSystemAccess && model.HasSystemAccess)
-            {
-                var result = await CreateEmployeeUserAsync(employee);
-                if (!result.Success)
-                {
-                    ModelState.AddModelError("", "Failed to grant system access.");
-                    LoadDropdowns();
-                    return View(model);
-                }
-
-                TempData["Success"] = $"System access granted. Temporary password: {result.Password}";
-            }
-
+            // Update basic fields FIRST
             employee.FullName = model.FullName;
             employee.Email = model.Email;
             employee.Phone = model.Phone;
@@ -125,52 +116,142 @@ namespace WMAS.Controllers
             employee.DesignationId = model.DesignationId;
             employee.IsActive = model.IsActive;
 
+            // Grant system access if newly enabled
+            if (!employee.HasSystemAccess && model.HasSystemAccess)
+            {
+                var result = await CreateOrResetUserAsync(employee);
+                if (!result.success)
+                {
+                    ModelState.AddModelError("", "Failed to grant system access.");
+                    await LoadDropdownsAsync();
+                    return View(model);
+                }
+                employee.HasSystemAccess = true;
+                TempData["Success"] = $"System access granted. Temporary password: {result.password}";
+            }
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
         // -------------------- RESET PASSWORD --------------------
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> ResetPassword(int id)
         {
             var employee = await _context.Employees.FindAsync(id);
-            if (employee == null || employee.UserId == null)
+            if (employee == null || string.IsNullOrEmpty(employee.UserId))
                 return NotFound();
 
             var user = await _userManager.FindByIdAsync(employee.UserId);
+            if (user == null)
+                return NotFound();
 
             var token = await _userManager.GeneratePasswordResetTokenAsync(user);
             var newPassword = GeneratePassword();
 
-            await _userManager.ResetPasswordAsync(user, token, newPassword);
+            var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+
+            if (!result.Succeeded)
+            {
+                TempData["Error"] = "Password reset failed.";
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            //TRACK RESET
+            employee.GeneratedPassword = newPassword;
+            employee.IsPasswordChanged = false;
+            employee.PasswordResetCount++;
+
+            await _context.SaveChangesAsync();
 
             TempData["Success"] = $"Password reset successfully. Temporary password: {newPassword}";
 
             return RedirectToAction(nameof(Details), new { id });
         }
 
-        #region Private Helpers
-        private async Task<(bool Success, string? Password)> CreateEmployeeUserAsync(Employee employee)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Deactivate(int id)
         {
-            var user = new IdentityUser
+            var employee = await _context.Employees.FindAsync(id);
+            if (employee == null)return NotFound();
+
+            employee.IsActive = false;
+            employee.DeactivatedOn = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Employee deactivated successfully.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Activate(int id)
+        {
+            var employee = await _context.Employees.FindAsync(id);
+            if (employee == null)
+                return NotFound();
+
+            employee.IsActive = true;
+            employee.DeactivatedOn = null;
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Employee activated successfully.";
+            return RedirectToAction(nameof(Index));
+        }
+
+
+        #region Private Helpers
+
+        private async Task<(bool success, string? password)>CreateOrResetUserAsync(Employee employee, bool isReset = false)
+        {
+            IdentityUser user;
+
+            if (string.IsNullOrEmpty(employee.UserId))
             {
-                UserName = employee.Email,
-                Email = employee.Email,
-                EmailConfirmed = true
-            };
+                // CREATE USER
+                user = new IdentityUser
+                {
+                    UserName = employee.Email,
+                    Email = employee.Email,
+                    EmailConfirmed = true
+                };
+                var password = GeneratePassword();
+                var result = await _userManager.CreateAsync(user, password);
 
-            var password = GeneratePassword();
-            var result = await _userManager.CreateAsync(user, password);
+                if (!result.Succeeded)
+                    return (false, null);
 
-            if (!result.Succeeded)
-                return (false, null);
+                await _userManager.AddToRoleAsync(user, "Employee");
 
-            await _userManager.AddToRoleAsync(user, "Employee");
+                employee.UserId = user.Id;
+                employee.GeneratedPassword = password;
+                employee.IsPasswordChanged = false;
+                employee.PasswordResetCount = 0;
 
-            employee.UserId = user.Id;
-            employee.HasSystemAccess = true;
+                return (true, password);
+            }
+            else
+            {
+                // RESET PASSWORD
+                user = await _userManager.FindByIdAsync(employee.UserId);
+                if (user == null) return (false, null);
 
-            return (true, password);
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var password = GeneratePassword();
+
+                var result = await _userManager.ResetPasswordAsync(user, token, password);
+                if (!result.Succeeded)
+                    return (false, null);
+
+                employee.GeneratedPassword = password;
+                employee.IsPasswordChanged = false;
+                employee.PasswordResetCount++;
+
+                return (true, password);
+            }
         }
 
         private string GeneratePassword()
@@ -178,19 +259,21 @@ namespace WMAS.Controllers
             return $"Emp@{Guid.NewGuid().ToString("N")[..8]}";
         }
 
-        private void LoadDropdowns()
+        private async Task LoadDropdownsAsync()
         {
-            ViewBag.Departments = _context.Departments.Select(d => new SelectListItem
-                                                      {
-                                                          Value = d.DepartmentId.ToString(),
-                                                          Text = d.DepartmentName
-                                                      }).ToList();
+            ViewBag.Departments = await _context.Departments.Where(d => d.IsActive)
+                                                            .Select(d => new SelectListItem
+                                                            {
+                                                                Value = d.DepartmentId.ToString(),
+                                                                Text = d.DepartmentName
+                                                            }).ToListAsync();
 
-            ViewBag.Designations = _context.Designations.Select(d => new SelectListItem
-                                                        {
-                                                            Value = d.DesignationId.ToString(),
-                                                            Text = d.Title
-                                                        }).ToList();
+            ViewBag.Designations = await _context.Designations.Where(d => d.IsActive)
+                                                              .Select(d => new SelectListItem
+                                                              {
+                                                                  Value = d.DesignationId.ToString(),
+                                                                  Text = d.Title
+                                                              }).ToListAsync();
         }
         #endregion
     }

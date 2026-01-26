@@ -22,18 +22,18 @@ namespace WMAS.Models
 
         [Required]
         public int DesignationId { get; set; }
-
+        public string? UserId { get; set; }
+        public bool HasSystemAccess { get; set; } = false;
+        public bool IsActive { get; set; } = true;
+        public DateTime? DeactivatedOn { get; set; }
+        public string? GeneratedPassword { get; set; }   
+        public bool IsPasswordChanged { get; set; }
+        public int PasswordResetCount { get; set; }
+        
         [ValidateNever]
         public Department Department { get; set; }
 
         [ValidateNever]
         public Designation Designation { get; set; }
-
-        public string? UserId { get; set; }
-
-        // Access control
-        public bool HasSystemAccess { get; set; } = false;
-
-        public bool IsActive { get; set; } = true;
     }
 }

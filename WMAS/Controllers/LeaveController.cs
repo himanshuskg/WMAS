@@ -45,7 +45,11 @@ namespace WMAS.Controllers
 
             var userId = _userManager.GetUserId(User);
             var employee = await _context.Employees.FirstOrDefaultAsync(e => e.UserId == userId);
-
+            if (!employee.IsActive)
+            {
+                TempData["Error"] = "Your account is inactive.";
+                return RedirectToAction("Index", "Home");
+            }
             leave.EmployeeId = employee.EmployeeId;
             leave.Status = "Pending";
 

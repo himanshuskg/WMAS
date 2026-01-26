@@ -13,6 +13,36 @@
         <p><strong>Designation:</strong> @Model.Designation?.Title</p>
 
         <hr />
+        @if (Model.HasSystemAccess)
+        {
+            <div class="card mt-3">
+                <div class="card-body">
+                    <h5>System Access</h5>
+                    <p>
+                        <strong>Generated Password:</strong>
+                        @Model.GeneratedPassword
+                    </p>
+
+                    <p>
+                        <strong>Password Reset Count:</strong>
+                        @Model.PasswordResetCount
+                    </p>
+
+                    <button class="btn btn-danger btn-sm"onclick="openConfirmModal(
+                    {
+                        title: 'Reset Password',
+                        message: 'A new temporary password will be generated for this employee.',
+                        buttonText: 'Reset Password',
+                        controller: 'Employee',
+                        action: 'ResetPassword',
+                        id: @Model.EmployeeId
+                    })">
+                        Reset Password
+                    </button>
+
+                </div>
+            </div>
+        }
 
         <h5>System Status</h5>
         <p>
@@ -28,17 +58,10 @@
         <hr />
 
         <div class="d-flex gap-2">
-
-            @if (Model.HasSystemAccess)
-            {
-                <form asp-action="ResetPassword" asp-route-id="@Model.EmployeeId" method="post">
-                    <button class="btn btn-warning">Reset Password</button>
-                </form>
-            }
-
             <a asp-action="Edit" asp-route-id="@Model.EmployeeId" class="btn btn-primary">Edit</a>
             <a asp-action="Index" class="btn btn-secondary">Back</a>
         </div>
 
     </div>
 </div>
+<partial name="_ConfirmActionModal" />

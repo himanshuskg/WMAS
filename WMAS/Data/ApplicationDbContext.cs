@@ -23,22 +23,23 @@ namespace WMAS.Data
         public DbSet<Note> Notes{ get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            base.OnModelCreating(builder);
-
+            base.OnModelCreating(builder); 
             builder.Entity<Salary>(entity =>
-            {
-                entity.Property(e => e.BasicPay)
-                      .HasPrecision(18, 2);
-
-                entity.Property(e => e.Allowances)
-                      .HasPrecision(18, 2);
-
-                entity.Property(e => e.Deductions)
-                      .HasPrecision(18, 2);
-
-                entity.Property(e => e.NetSalary)
-                      .HasPrecision(18, 2);
+            {                
+                entity.Property(e => e.BasicPay).HasPrecision(18, 2);
+                entity.Property(e => e.Allowances).HasPrecision(18, 2);
+                entity.Property(e => e.Deductions).HasPrecision(18, 2);
+                entity.Property(e => e.NetSalary).HasPrecision(18, 2);
             });
+            //Disable Cascade delete
+            builder.Entity<Employee>().HasOne(e => e.Department)
+                                      .WithMany().HasForeignKey(e => e.DepartmentId)
+                                      .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Employee>().HasOne(e => e.Designation)
+                                      .WithMany().HasForeignKey(e => e.DesignationId)
+                                      .OnDelete(DeleteBehavior.Restrict);
+           
         }
 
 

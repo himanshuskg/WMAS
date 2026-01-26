@@ -1,9 +1,14 @@
-﻿function openDeleteModal(id, name, action, controller) {
-    document.getElementById("deleteItemName").innerText = name;
+﻿function openConfirmModal(options) {
+    document.getElementById("confirmActionTitle").innerText = options.title;
+    document.getElementById("confirmActionMessage").innerText = options.message;
+    document.getElementById("confirmActionButton").innerText = options.buttonText;
 
-    const form = document.getElementById("deleteForm");
-    form.action = `/${controller}/${action}/${id}`;
+    const form = document.getElementById("confirmActionForm");
+    form.action = `/${options.controller}/${options.action}/${options.id}`;
 
-    const modal = new bootstrap.Modal(document.getElementById("deleteModal"));
+    const modal = new bootstrap.Modal(
+        document.getElementById("confirmActionModal")
+    );
+
     modal.show();
 }

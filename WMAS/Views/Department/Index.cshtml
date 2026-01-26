@@ -37,8 +37,38 @@
                             <tr>
                                 <td>@item.DepartmentName</td>
 
-                                <td class="text-end"><a asp-action="Edit" asp-route-id="@item.DepartmentId" class="btn btn-sm btn-outline-secondary me-1"> Edit</a>
-                                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(@item.DepartmentId,'@item.DepartmentName','Delete','Department')">Delete</button>
+                                <td class="text-end">
+                                    <a asp-action="Edit" asp-route-id="@item.DepartmentId" class="btn btn-sm btn-outline-secondary me-1"> Edit</a>
+                                   @if (item.IsActive)
+                                    {
+                                        <button class="btn btn-warning btn-sm" onclick="openConfirmModal(
+                                        {
+                                            title: 'Deactivate Department', 
+                                            message: 'Are you sure you want to deactivate this department?',
+                                            buttonText: 'Deactivate', 
+                                            controller: 'Department', 
+                                            action: 'Deactivate', 
+                                            id: @item.DepartmentId
+                                        })">
+                                            Deactivate
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-success btn-sm" onclick="openConfirmModal(
+                                        {
+                                            title: 'Activate Department',
+                                            message: 'This Department will reactivate.',
+                                            buttonText: 'Activate',
+                                            controller: 'Department',
+                                            action: 'Activate',
+                                            id: @item.DepartmentId
+                                        })">
+                                            Activate
+                                        </button>
+
+                                    }
+
                                 </td>
                             </tr>
                         }
@@ -48,5 +78,4 @@
         </div>
     </div>
 </div>
-
-@await Html.PartialAsync("_DeleteModal")
+<partial name="_ConfirmActionModal" />
