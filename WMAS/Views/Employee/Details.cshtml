@@ -28,15 +28,15 @@
                         @Model.PasswordResetCount
                     </p>
 
-                    <button class="btn btn-danger btn-sm"onclick="openConfirmModal(
-                    {
-                        title: 'Reset Password',
-                        message: 'A new temporary password will be generated for this employee.',
-                        buttonText: 'Reset Password',
-                        controller: 'Employee',
-                        action: 'ResetPassword',
-                        id: @Model.EmployeeId
-                    })">
+                    <button class="btn btn-danger btn-sm" onclick="openConfirmAction(
+                        {
+                            title: 'Reset Password',
+                            message: 'A new temporary password will be generated for this employee.',
+                            buttonText: 'Reset Password',
+                            controller: 'Employee',
+                            action: 'ResetPassword',
+                            id: @Model.EmployeeId
+                        })">
                         Reset Password
                     </button>
 
@@ -64,4 +64,3 @@
 
     </div>
 </div>
-<partial name="_ConfirmActionModal" />

@@ -38,32 +38,33 @@
                                 <td>@item.DepartmentName</td>
 
                                 <td class="text-end">
-                                    <a asp-action="Edit" asp-route-id="@item.DepartmentId" class="btn btn-sm btn-outline-secondary me-1"> Edit</a>
-                                   @if (item.IsActive)
+                                    <a asp-action="Edit" asp-route-id="@item.DepartmentId"
+                                        class="btn btn-sm btn-outline-secondary me-1"> Edit</a>
+                                    @if (item.IsActive)
                                     {
-                                        <button class="btn btn-warning btn-sm" onclick="openConfirmModal(
-                                        {
-                                            title: 'Deactivate Department', 
-                                            message: 'Are you sure you want to deactivate this department?',
-                                            buttonText: 'Deactivate', 
-                                            controller: 'Department', 
-                                            action: 'Deactivate', 
-                                            id: @item.DepartmentId
-                                        })">
+                                        <button class="btn btn-warning btn-sm" onclick="openConfirmAction(
+                                                                {
+                                                                    title: 'Deactivate Department', 
+                                                                    message: 'Are you sure you want to deactivate this department?',
+                                                                    buttonText: 'Deactivate', 
+                                                                    controller: 'Department', 
+                                                                    action: 'Deactivate', 
+                                                                    id: @item.DepartmentId
+                                                                })">
                                             Deactivate
                                         </button>
                                     }
                                     else
                                     {
-                                        <button class="btn btn-success btn-sm" onclick="openConfirmModal(
-                                        {
-                                            title: 'Activate Department',
-                                            message: 'This Department will reactivate.',
-                                            buttonText: 'Activate',
-                                            controller: 'Department',
-                                            action: 'Activate',
-                                            id: @item.DepartmentId
-                                        })">
+                                        <button class="btn btn-success btn-sm" onclick="openConfirmAction(
+                                                                {
+                                                                    title: 'Activate Department',
+                                                                    message: 'This Department will reactivate.',
+                                                                    buttonText: 'Activate',
+                                                                    controller: 'Department',
+                                                                    action: 'Activate',
+                                                                    id: @item.DepartmentId
+                                                                })">
                                             Activate
                                         </button>
 
@@ -78,4 +79,3 @@
         </div>
     </div>
 </div>
-<partial name="_ConfirmActionModal" />

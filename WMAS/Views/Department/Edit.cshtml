@@ -1,15 +1,54 @@
 ﻿@model WMAS.Models.Department
 
-<h2>Edit Department</h2>
+<div class="container mt-4">
+    <h2>Edit Department</h2>
 
-<form asp-action="Edit" method="post">
-    <input type="hidden" asp-for="DepartmentId" />
+    <form asp-action="Edit"
+          method="post"
+          id="editDepartmentForm"
+          data-original-name="@Model.DepartmentName?.Trim()">
 
-    <div>
-        <label asp-for="DepartmentName"></label>
-        <input asp-for="DepartmentName" />
-        <span asp-validation-for="DepartmentName"></span>
-    </div>
+        <input type="hidden" asp-for="DepartmentId" />
 
-    <button type="submit">Update</button>
-</form>
+        <div class="mb-3">
+            <label asp-for="DepartmentName" class="form-label"></label>
+            <input asp-for="DepartmentName" class="form-control" />
+            <span asp-validation-for="DepartmentName" class="text-danger"></span>
+        </div>
+
+        @* If you have an IsActive field, add it here like this: *@
+        @* <div class="form-check mb-3">
+            <input asp-for="IsActive" class="form-check-input" />
+            <label class="form-check-label">Is Active</label>
+        </div> 
+        *@
+
+        <div class="mt-3">
+            <button type="submit" class="btn btn-primary">
+                Update
+            </button>
+            <a asp-action="Index" class="btn btn-secondary">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        attachEditConfirmation({
+            formId: "editDepartmentForm",
+            title: "Confirm Department Update",
+            buttonText: "Confirm Update",
+            fields: [
+                {
+                    name: "DepartmentName",
+                    label: "Department Name",
+                    oldKey: "originalName"
+                }
+            ]
+        });
+    </script>
+}

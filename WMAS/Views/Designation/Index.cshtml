@@ -31,33 +31,34 @@
                         {
                             <tr>
                                 <td>@item.Title</td>
-                                <td class="text-end"> 
-                                    <a asp-action="Edit" asp-route-id="@item.DesignationId" class="btn btn-sm btn-outline-secondary me-1">Edit</a>
+                                <td class="text-end">
+                                    <a asp-action="Edit" asp-route-id="@item.DesignationId"
+                                        class="btn btn-sm btn-outline-secondary me-1">Edit</a>
                                     @if (item.IsActive)
                                     {
-                                        <button class="btn btn-warning btn-sm" onclick="openConfirmModal(
-                                                    {
-                                                        title: 'Deactivate Designation',
-                                                        message: 'Are you sure you want to deactivate this designation?',
-                                                        buttonText: 'Deactivate',
-                                                        controller: 'Designation',
-                                                        action: 'Deactivate',
-                                                        id: @item.DesignationId
-                                                    })">
+                                        <button class="btn btn-warning btn-sm" onclick="openConfirmAction(
+                                                                            {
+                                                                                title: 'Deactivate Designation',
+                                                                                message: 'Are you sure you want to deactivate this designation?',
+                                                                                buttonText: 'Deactivate',
+                                                                                controller: 'Designation',
+                                                                                action: 'Deactivate',
+                                                                                id: @item.DesignationId
+                                                                            })">
                                             Deactivate
                                         </button>
                                     }
                                     else
                                     {
-                                        <button class="btn btn-success btn-sm" onclick="openConfirmModal(
-                                        {
-                                            title: 'Activate Designation',
-                                            message: 'This designation will reactivate.',
-                                            buttonText: 'Activate',
-                                            controller: 'Designation',
-                                            action: 'Activate',
-                                            id: @item.DesignationId
-                                        })">
+                                        <button class="btn btn-success btn-sm" onclick="openConfirmAction(
+                                                                {
+                                                                    title: 'Activate Designation',
+                                                                    message: 'This designation will reactivate.',
+                                                                    buttonText: 'Activate',
+                                                                    controller: 'Designation',
+                                                                    action: 'Activate',
+                                                                    id: @item.DesignationId
+                                                                })">
                                             Activate
                                         </button>
 
@@ -72,4 +73,3 @@
         </div>
     </div>
 </div>
-<partial name="_ConfirmActionModal" />

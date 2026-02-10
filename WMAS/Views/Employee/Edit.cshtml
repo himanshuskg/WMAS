@@ -3,45 +3,118 @@
 <div class="container mt-4">
     <h2>Edit Employee</h2>
 
-    <form asp-action="Edit" method="post">
+    @* ⚠ Warning if assigned to inactive master data *@
+    @if (ViewBag.HasInactiveAssignment == true)
+    {
+        <div class="alert alert-warning">
+            This employee is assigned to an inactive department or designation.
+            If you update the employee, the assignment may change.
+        </div>
+    }
+
+    <form asp-action="Edit"
+          method="post"
+          id="editEmployeeForm"
+          data-original-name="@Model.FullName"
+          data-original-email="@Model.Email"
+          data-original-phone="@Model.Phone"
+          data-original-department-label="@Model.Department?.DepartmentName"
+          data-original-designation-label="@Model.Designation?.Title"
+          data-original-hassystemaccess="@Model.HasSystemAccess">
+
         <input type="hidden" asp-for="EmployeeId" />
 
         <div class="mb-3">
             <label asp-for="FullName" class="form-label"></label>
             <input asp-for="FullName" class="form-control" />
+            <span asp-validation-for="FullName" class="text-danger"></span>
         </div>
 
         <div class="mb-3">
             <label asp-for="Email" class="form-label"></label>
             <input asp-for="Email" class="form-control" />
+            <span asp-validation-for="Email" class="text-danger"></span>
         </div>
 
         <div class="mb-3">
             <label asp-for="Phone" class="form-label"></label>
             <input asp-for="Phone" class="form-control" />
+            <span asp-validation-for="Phone" class="text-danger"></span>
         </div>
 
         <div class="mb-3">
             <label class="form-label">Department</label>
-            <select asp-for="DepartmentId" asp-items="ViewBag.Departments" class="form-select"></select>
+            <select asp-for="DepartmentId"
+                    asp-items="ViewBag.Departments"
+                    class="form-select">
+            </select>
+            <small class="text-muted">
+                Inactive departments are marked as “(Inactive)”.
+            </small>
         </div>
 
         <div class="mb-3">
             <label class="form-label">Designation</label>
-            <select asp-for="DesignationId" asp-items="ViewBag.Designations" class="form-select"></select>
+            <select asp-for="DesignationId"
+                    asp-items="ViewBag.Designations"
+                    class="form-select">
+            </select>
+            <small class="text-muted">
+                Inactive designations are marked as “(Inactive)”.
+            </small>
         </div>
-        <div class="form-check">
+
+        <hr />
+
+        @*System access *@
+        <div class="form-check mb-2">
             <input asp-for="HasSystemAccess" class="form-check-input" />
-            <label class="form-check-label">Give System Access</label>
+            <label class="form-check-label">
+                Give System Access
+            </label>
         </div>
 
         @if (Model.HasSystemAccess && string.IsNullOrEmpty(Model.UserId))
         {
-            <div class="alert alert-info mt-2">
-                System account will be created on save.
+            <div class="alert alert-info">
+                A system account will be created and a temporary password will be generated.
             </div>
         }
-        <button type="submit" class="btn btn-primary">Update</button>
-        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+
+        @if (Model.HasSystemAccess && !string.IsNullOrEmpty(Model.UserId))
+        {
+            <div class="alert alert-secondary">
+                This employee already has system access.
+            </div>
+        }
+
+        <div class="mt-3">
+            <button type="submit" class="btn btn-primary">
+                Update
+            </button>
+            <a asp-action="Index" class="btn btn-secondary">
+                Cancel
+            </a>
+        </div>
     </form>
 </div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        attachEditConfirmation({
+            formId: "editEmployeeForm",
+            title: "Confirm Employee Update",
+            buttonText: "Confirm Update",
+            fields: [
+                { name: "FullName", label: "Name", oldKey: "originalName" },
+                { name: "Email", label: "Email", oldKey: "originalEmail" },
+                { name: "Phone", label: "Phone", oldKey: "originalPhone" },
+                { name: "DepartmentId", label: "Department", oldKey: "originalDepartmentLabel" },
+                { name: "DesignationId", label: "Designation", oldKey: "originalDesignationLabel" },
+                { name: "HasSystemAccess", label: "System Access", oldKey: "originalHassystemaccess" }
+            ]
+        });
+    </script>
+}

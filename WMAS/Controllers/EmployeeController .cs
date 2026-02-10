@@ -86,13 +86,17 @@ namespace WMAS.Controllers
         // -------------------- EDIT --------------------
         public async Task<IActionResult> Edit(int id)
         {
-            var employee = await _context.Employees.FindAsync(id);
+            var employee = await _context.Employees.Include(e => e.Department)
+                                                   .Include(e => e.Designation)
+                                                   .FirstOrDefaultAsync(e => e.EmployeeId == id);
+
             if (employee == null)
                 return NotFound();
 
-            await LoadDropdownsAsync();
+            await LoadDropdownsAsync(employee.DepartmentId, employee.DesignationId);
             return View(employee);
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -104,7 +108,7 @@ namespace WMAS.Controllers
 
             if (!ModelState.IsValid)
             {
-                await LoadDropdownsAsync();
+                await LoadDropdownsAsync(employee.DepartmentId, employee.DesignationId);
                 return View(model);
             }
 
@@ -123,7 +127,7 @@ namespace WMAS.Controllers
                 if (!result.success)
                 {
                     ModelState.AddModelError("", "Failed to grant system access.");
-                    await LoadDropdownsAsync();
+                    await LoadDropdownsAsync(employee.DepartmentId, employee.DesignationId);
                     return View(model);
                 }
                 employee.HasSystemAccess = true;
@@ -174,7 +178,7 @@ namespace WMAS.Controllers
         public async Task<IActionResult> Deactivate(int id)
         {
             var employee = await _context.Employees.FindAsync(id);
-            if (employee == null)return NotFound();
+            if (employee == null) return NotFound();
 
             employee.IsActive = false;
             employee.DeactivatedOn = DateTime.UtcNow;
@@ -205,7 +209,7 @@ namespace WMAS.Controllers
 
         #region Private Helpers
 
-        private async Task<(bool success, string? password)>CreateOrResetUserAsync(Employee employee, bool isReset = false)
+        private async Task<(bool success, string? password)> CreateOrResetUserAsync(Employee employee, bool isReset = false)
         {
             IdentityUser user;
 
@@ -259,22 +263,27 @@ namespace WMAS.Controllers
             return $"Emp@{Guid.NewGuid().ToString("N")[..8]}";
         }
 
-        private async Task LoadDropdownsAsync()
+        private async Task LoadDropdownsAsync(int? departmentId = null, int? designationId = null)
         {
-            ViewBag.Departments = await _context.Departments.Where(d => d.IsActive)
+            ViewBag.Departments = await _context.Departments.Where(d => d.IsActive || d.DepartmentId == departmentId)
                                                             .Select(d => new SelectListItem
                                                             {
                                                                 Value = d.DepartmentId.ToString(),
-                                                                Text = d.DepartmentName
+                                                                Text = d.IsActive ? d.DepartmentName : $"{d.DepartmentName} (Inactive)",
+                                                                Disabled = !d.IsActive && d.DepartmentId != departmentId,
+                                                                Selected = d.DepartmentId == departmentId
                                                             }).ToListAsync();
 
-            ViewBag.Designations = await _context.Designations.Where(d => d.IsActive)
+            ViewBag.Designations = await _context.Designations.Where(d => d.IsActive || d.DesignationId == designationId)
                                                               .Select(d => new SelectListItem
                                                               {
                                                                   Value = d.DesignationId.ToString(),
-                                                                  Text = d.Title
+                                                                  Text = d.IsActive ? d.Title : $"{d.Title} (Inactive)",
+                                                                  Disabled = !d.IsActive && d.DesignationId != designationId,
+                                                                  Selected = d.DesignationId == designationId
                                                               }).ToListAsync();
         }
+
         #endregion
     }
 }
