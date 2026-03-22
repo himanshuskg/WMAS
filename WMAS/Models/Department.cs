@@ -6,10 +6,10 @@ namespace WMAS.Models
     public class Department : AuditableEntity
     {
         public int DepartmentId { get; set; }
-        [Required]
-        [StringLength(100)]
+
+        [Required(ErrorMessage = "Department Name is required")]
+        [StringLength(100, ErrorMessage = "Department Name cannot be longer than 100 characters")]
         public string DepartmentName { get; set; }
         public bool IsActive { get; set; } = true;
-
     }
 }

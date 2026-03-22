@@ -295,6 +295,36 @@ namespace WMAS.Data.Migrations
                     b.HasKey("DepartmentId");
 
                     b.ToTable("Departments");
+
+                    b.HasData(
+                        new
+                        {
+                            DepartmentId = 1,
+                            CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DepartmentName = "IT",
+                            IsActive = true
+                        },
+                        new
+                        {
+                            DepartmentId = 2,
+                            CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DepartmentName = "HR",
+                            IsActive = true
+                        },
+                        new
+                        {
+                            DepartmentId = 3,
+                            CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DepartmentName = "Sales",
+                            IsActive = true
+                        },
+                        new
+                        {
+                            DepartmentId = 4,
+                            CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DepartmentName = "Admin",
+                            IsActive = true
+                        });
                 });
 
             modelBuilder.Entity("WMAS.Models.Designation", b =>
@@ -311,12 +341,16 @@ namespace WMAS.Data.Migrations
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("DepartmentId")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(max)");
@@ -327,6 +361,104 @@ namespace WMAS.Data.Migrations
                     b.HasKey("DesignationId");
 
                     b.ToTable("Designations");
+
+                    b.HasData(
+                        new
+                        {
+                            DesignationId = 1,
+                            CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DepartmentId = 1,
+                            IsActive = true,
+                            Title = "Software Developer"
+                        },
+                        new
+                        {
+                            DesignationId = 2,
+                            CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DepartmentId = 1,
+                            IsActive = true,
+                            Title = "System Administrator"
+                        },
+                        new
+                        {
+                            DesignationId = 3,
+                            CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DepartmentId = 1,
+                            IsActive = true,
+                            Title = "Network Engineer"
+                        },
+                        new
+                        {
+                            DesignationId = 4,
+                            CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DepartmentId = 2,
+                            IsActive = true,
+                            Title = "HR Specialist"
+                        },
+                        new
+                        {
+                            DesignationId = 5,
+                            CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DepartmentId = 2,
+                            IsActive = true,
+                            Title = "HR Manager"
+                        },
+                        new
+                        {
+                            DesignationId = 6,
+                            CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DepartmentId = 2,
+                            IsActive = true,
+                            Title = "Talent Acquisition Coordinator"
+                        },
+                        new
+                        {
+                            DesignationId = 7,
+                            CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DepartmentId = 3,
+                            IsActive = true,
+                            Title = "Sales Executive"
+                        },
+                        new
+                        {
+                            DesignationId = 8,
+                            CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DepartmentId = 3,
+                            IsActive = true,
+                            Title = "Sales Manager"
+                        },
+                        new
+                        {
+                            DesignationId = 9,
+                            CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DepartmentId = 3,
+                            IsActive = true,
+                            Title = "Account Executive"
+                        },
+                        new
+                        {
+                            DesignationId = 10,
+                            CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DepartmentId = 4,
+                            IsActive = true,
+                            Title = "Office Manager"
+                        },
+                        new
+                        {
+                            DesignationId = 11,
+                            CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DepartmentId = 4,
+                            IsActive = true,
+                            Title = "Executive Assistant"
+                        },
+                        new
+                        {
+                            DesignationId = 12,
+                            CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            DepartmentId = 4,
+                            IsActive = true,
+                            Title = "Receptionist"
+                        });
                 });
 
             modelBuilder.Entity("WMAS.Models.Employee", b =>
@@ -343,6 +475,9 @@ namespace WMAS.Data.Migrations
                     b.Property<DateTime>("CreatedOn")
                         .HasColumnType("datetime2");
 
+                    b.Property<DateOnly>("DateOfBirth")
+                        .HasColumnType("date");
+
                     b.Property<DateTime?>("DeactivatedOn")
                         .HasColumnType("datetime2");
 
@@ -356,7 +491,14 @@ namespace WMAS.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("EmployeeTypeId")
+                        .HasColumnType("int");
+
                     b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Gender")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -372,12 +514,21 @@ namespace WMAS.Data.Migrations
                     b.Property<bool>("IsPasswordChanged")
                         .HasColumnType("bit");
 
+                    b.Property<DateOnly>("JoiningDate")
+                        .HasColumnType("date");
+
                     b.Property<int>("PasswordResetCount")
                         .HasColumnType("int");
 
                     b.Property<string>("Phone")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ReportingManagerId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Salary")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(max)");
@@ -394,7 +545,73 @@ namespace WMAS.Data.Migrations
 
                     b.HasIndex("DesignationId");
 
+                    b.HasIndex("EmployeeTypeId");
+
+                    b.HasIndex("ReportingManagerId");
+
                     b.ToTable("Employees");
+                });
+
+            modelBuilder.Entity("WMAS.Models.EmployeeType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CreatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("UpdatedOn")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EmployeeTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            Name = "Permanent"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            Name = "Temporary"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            Name = "Contract"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CreatedOn = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsActive = true,
+                            Name = "Intern"
+                        });
                 });
 
             modelBuilder.Entity("WMAS.Models.Leave", b =>
@@ -608,9 +825,23 @@ namespace WMAS.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("WMAS.Models.EmployeeType", "EmployeeType")
+                        .WithMany("Employees")
+                        .HasForeignKey("EmployeeTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("WMAS.Models.Employee", "ReportingManager")
+                        .WithMany("Subordinates")
+                        .HasForeignKey("ReportingManagerId");
+
                     b.Navigation("Department");
 
                     b.Navigation("Designation");
+
+                    b.Navigation("EmployeeType");
+
+                    b.Navigation("ReportingManager");
                 });
 
             modelBuilder.Entity("WMAS.Models.Leave", b =>
@@ -633,6 +864,16 @@ namespace WMAS.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("WMAS.Models.Employee", b =>
+                {
+                    b.Navigation("Subordinates");
+                });
+
+            modelBuilder.Entity("WMAS.Models.EmployeeType", b =>
+                {
+                    b.Navigation("Employees");
                 });
 #pragma warning restore 612, 618
         }

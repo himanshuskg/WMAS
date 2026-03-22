@@ -10,67 +10,44 @@
         onConfirm
     } = options;
 
-    document.getElementById("confirmActionTitle").innerText = title;// Allow HTML (for diff preview)
-    document.getElementById("confirmActionMessage").innerHTML = message;
-    document.getElementById("confirmActionButton").innerText = buttonText;
-    const form = document.getElementById("confirmActionForm");
-    form.onsubmit = null;  // Reset previous state
-    form.action = "";
-
-    if (controller && action && id !== undefined) { // CASE 1: Normal controller/action POST
-        form.action = `/${controller}/${action}/${id}`;
-    }
-    if (actionUrl) { // CASE 2: Direct action URL
-        form.action = actionUrl;
-    }
-
-    
-    if (onConfirm) {
-        form.onsubmit = function (e) {
-            e.preventDefault();
-            onConfirm();//Prevent Default Submit
-            return false;
-        };
-    }
-
-    const modalElement = document.getElementById("confirmActionModal");
-    const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
-    modal.show();
-}
-// Change-Show Function
-/**
- * Opens a Bootstrap modal for confirmation.
- */
-function openConfirmAction(options) {
-    const {
-        title,
-        message,
-        buttonText = "Confirm",
-        onConfirm
-    } = options;
-
+    // Update modal content
     document.getElementById("confirmActionTitle").innerText = title;
     document.getElementById("confirmActionMessage").innerHTML = message;
     document.getElementById("confirmActionButton").innerText = buttonText;
 
     const form = document.getElementById("confirmActionForm");
 
-    // Clear previous handlers to prevent duplicate submissions
+    // Reset previous state
+    form.action = "";
     form.onsubmit = null;
 
+    // Set POST target
+    if (controller && action && id !== undefined) {
+        form.action = `/${controller}/${action}/${id}`;
+    } else if (actionUrl) {
+        form.action = actionUrl;
+    } else {
+        console.warn("No action URL provided for confirmation modal");
+    }
+
+    // Handle custom callback or normal form submit
     if (onConfirm) {
+        // Custom logic (like edit confirmation) → prevent normal submit
         form.onsubmit = function (e) {
             e.preventDefault();
             onConfirm();
             return false;
         };
+    } else {
+        // Normal POST → allow form to submit naturally
+        // No onsubmit handler = default browser submit behavior
     }
 
+    // Show modal
     const modalElement = document.getElementById("confirmActionModal");
     const modal = bootstrap.Modal.getOrCreateInstance(modalElement);
     modal.show();
 }
-
 /*
  * Attaches change - tracking to a form to show a diff modal before submit.
  */

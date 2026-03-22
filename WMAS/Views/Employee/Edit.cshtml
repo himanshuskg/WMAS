@@ -1,119 +1,199 @@
-﻿@model WMAS.Models.Employee
+﻿@model WMAS.Models.ViewModels.EmployeeCreateUpdateViewModel
 
-<div class="container mt-4">
-    <h2>Edit Employee</h2>
+@{
+    var departments = Model?.Departments ?? new List<Department>();
+    var designations = Model?.Designations ?? new List<Designation>();
+    var employeeTypes = Model?.EmployeeTypes ?? new List<EmployeeType>();
+    ViewData["Title"] = "Edit Employee";
+}
 
-    @* ⚠ Warning if assigned to inactive master data *@
-    @if (ViewBag.HasInactiveAssignment == true)
-    {
-        <div class="alert alert-warning">
-            This employee is assigned to an inactive department or designation.
-            If you update the employee, the assignment may change.
-        </div>
-    }
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
 
-    <form asp-action="Edit"
-          method="post"
-          id="editEmployeeForm"
-          data-original-name="@Model.FullName"
-          data-original-email="@Model.Email"
-          data-original-phone="@Model.Phone"
-          data-original-department-label="@Model.Department?.DepartmentName"
-          data-original-designation-label="@Model.Designation?.Title"
-          data-original-hassystemaccess="@Model.HasSystemAccess">
+            <div class="card shadow border-0 rounded-4">
+                <div class="card-header bg-warning text-dark text-center py-3">
+                    <h4 class="mb-0">✏️ Edit Employee</h4>
+                </div>
 
-        <input type="hidden" asp-for="EmployeeId" />
+                <div class="card-body p-4">
 
-        <div class="mb-3">
-            <label asp-for="FullName" class="form-label"></label>
-            <input asp-for="FullName" class="form-control" />
-            <span asp-validation-for="FullName" class="text-danger"></span>
-        </div>
+                    <form asp-action="Edit" method="post" id="editEmployeeForm"
+                          data-original-name="@Model.FullName"
+                          data-original-email="@Model.Email"
+                          data-original-phone="@Model.Phone"
+                          data-original-gender="@Model.Gender"
+                          data-original-department-label="@(departments.FirstOrDefault(d => d.DepartmentId == Model.DepartmentId)?.DepartmentName ?? "")"
+                          data-original-designation-label="@(designations.FirstOrDefault(d => d.DesignationId == Model.DesignationId)?.Title ?? "")"
+                          data-original-employee-type-label="@(employeeTypes.FirstOrDefault(e => e.Id == Model.EmployeeTypeId)?.Name ?? "")"
+                          data-original-has-system-access="@Model.HasSystemAccess.ToString().ToLower()">
+                        <!-- Hidden ID -->
+                        <input type="hidden" asp-for="Id" />
 
-        <div class="mb-3">
-            <label asp-for="Email" class="form-label"></label>
-            <input asp-for="Email" class="form-control" />
-            <span asp-validation-for="Email" class="text-danger"></span>
-        </div>
+                        <!-- Full Name -->
+                        <div class="mb-3">
+                            <label asp-for="FullName" class="form-label fw-semibold"></label>
+                            <input asp-for="FullName" class="form-control" />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
 
-        <div class="mb-3">
-            <label asp-for="Phone" class="form-label"></label>
-            <input asp-for="Phone" class="form-control" />
-            <span asp-validation-for="Phone" class="text-danger"></span>
-        </div>
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label fw-semibold"></label>
+                            <input asp-for="Email" class="form-control" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+                        <!-- Phone -->
+                        <div class="mb-3">
+                            <label asp-for="Phone" class="form-label fw-semibold"></label>
+                            <input asp-for="Phone" class="form-control" />
+                            <span asp-validation-for="Phone" class="text-danger small"></span>
+                        </div>
 
-        <div class="mb-3">
-            <label class="form-label">Department</label>
-            <select asp-for="DepartmentId"
-                    asp-items="ViewBag.Departments"
-                    class="form-select">
-            </select>
-            <small class="text-muted">
-                Inactive departments are marked as “(Inactive)”.
-            </small>
-        </div>
+                        <!-- Department -->
+                        <div class="mb-3">
+                            <label asp-for="DepartmentId" class="form-label fw-semibold"></label>
+                            <select asp-for="DepartmentId"
+                                    asp-items="@(new SelectList(departments, "DepartmentId", "DepartmentName", Model.DepartmentId))"
+                                    class="form-select select2-single">
+                                <option value="">-- Select Department --</option>
+                            </select>
+                            <span asp-validation-for="DepartmentId" class="text-danger small"></span>
+                        </div>
 
-        <div class="mb-3">
-            <label class="form-label">Designation</label>
-            <select asp-for="DesignationId"
-                    asp-items="ViewBag.Designations"
-                    class="form-select">
-            </select>
-            <small class="text-muted">
-                Inactive designations are marked as “(Inactive)”.
-            </small>
-        </div>
+                        <!-- Designation -->
+                        <div class="mb-3">
+                            <label asp-for="DesignationId" class="form-label fw-semibold"></label>
+                            <select asp-for="DesignationId"
+                                    asp-items="@(new SelectList(designations, "DesignationId", "Title", Model.DesignationId))"
+                                    class="form-select select2-single">
+                                <option value="">-- Select Designation --</option>
+                            </select>
+                            <span asp-validation-for="DesignationId" class="text-danger small"></span>
+                        </div>
 
-        <hr />
+                        <!-- Employee Type -->
+                        <div class="mb-3">
+                            <label asp-for="EmployeeTypeId" class="form-label fw-semibold"></label>
+                            <select asp-for="EmployeeTypeId"
+                                    asp-items="@(new SelectList(employeeTypes, "Id", "Name", Model.EmployeeTypeId))"
+                                    class="form-select select2-single">
+                                <option value="">-- Select Employee Type --</option>
+                            </select>
+                            <span asp-validation-for="EmployeeTypeId" class="text-danger small"></span>
+                        </div>
 
-        @*System access *@
-        <div class="form-check mb-2">
-            <input asp-for="HasSystemAccess" class="form-check-input" />
-            <label class="form-check-label">
-                Give System Access
-            </label>
-        </div>
+                        <!-- Dates -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="HireDate" class="form-label fw-semibold"></label>
+                                <input asp-for="HireDate" type="date" class="form-control" />
+                                <span asp-validation-for="HireDate" class="text-danger small"></span>
+                            </div>
 
-        @if (Model.HasSystemAccess && string.IsNullOrEmpty(Model.UserId))
-        {
-            <div class="alert alert-info">
-                A system account will be created and a temporary password will be generated.
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="DateOfBirth" class="form-label fw-semibold"></label>
+                                <input asp-for="DateOfBirth" type="date" class="form-control" />
+                                <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <!-- ✅ FIXED Gender -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Gender</label>
+                            <div class="d-flex gap-3">
+                                <div class="form-check">
+                                    <input type="radio" asp-for="Gender" value="Male" class="form-check-input" />
+                                    <label class="form-check-label">Male</label>
+                                </div>
+                                <div class="form-check">
+                                    <input type="radio" asp-for="Gender" value="Female" class="form-check-input" />
+                                    <label class="form-check-label">Female</label>
+                                </div>
+                                <div class="form-check">
+                                    <input type="radio" asp-for="Gender" value="Other" class="form-check-input" />
+                                    <label class="form-check-label">Other</label>
+                                </div>
+                            </div>
+                            <span asp-validation-for="Gender" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Salary -->
+                        <div class="mb-3">
+                            <label asp-for="Salary" class="form-label fw-semibold"></label>
+                            <input asp-for="Salary" class="form-control" />
+                            <span asp-validation-for="Salary" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Switches -->
+                        <div class="form-check form-switch mb-2">
+                            <input asp-for="IsActive" class="form-check-input" />
+                            <label class="form-check-label">Active</label>
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                            <input asp-for="HasSystemAccess" class="form-check-input" />
+                            <label class="form-check-label">System Access</label>
+                        </div>
+
+                        <!-- RESET PASSWORD (MODAL REQUIRED ✅) -->
+                        @if (Model.HasSystemAccess && Model.Id.HasValue)
+                        {
+                            <button type="button" class="btn btn-danger btn-sm mb-3"
+                                    onclick="openConfirmAction({
+                                            title: 'Reset Password',
+                                            message: 'A new temporary password will be generated.',
+                                            buttonText: 'Reset Password',
+                                            controller: 'Employee',
+                                            action: 'ResetPassword',
+                                            id: @Model.Id
+                                        })">
+                                Reset Password
+                            </button>
+                        }
+
+                        <!-- Buttons -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-outline-secondary">← Back</a>
+                            <button type="submit" class="btn btn-warning px-4">✔ Update</button>
+                        </div>
+
+                    </form>
+
+                </div>
             </div>
-        }
 
-        @if (Model.HasSystemAccess && !string.IsNullOrEmpty(Model.UserId))
-        {
-            <div class="alert alert-secondary">
-                This employee already has system access.
-            </div>
-        }
-
-        <div class="mt-3">
-            <button type="submit" class="btn btn-primary">
-                Update
-            </button>
-            <a asp-action="Index" class="btn btn-secondary">
-                Cancel
-            </a>
         </div>
-    </form>
+    </div>
 </div>
 
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-
+@section Scripts{
     <script>
+        $(document).ready(function () {
+            $('.select2-single').select2({
+                placeholder: "Select an option",
+                allowClear: true,
+                width: '100%'
+            });
+    
+            $('.select2-single').on('change', function () {
+                $(this).trigger('blur');
+            });
+        });
+        
         attachEditConfirmation({
             formId: "editEmployeeForm",
             title: "Confirm Employee Update",
             buttonText: "Confirm Update",
             fields: [
-                { name: "FullName", label: "Name", oldKey: "originalName" },
-                { name: "Email", label: "Email", oldKey: "originalEmail" },
-                { name: "Phone", label: "Phone", oldKey: "originalPhone" },
-                { name: "DepartmentId", label: "Department", oldKey: "originalDepartmentLabel" },
-                { name: "DesignationId", label: "Designation", oldKey: "originalDesignationLabel" },
-                { name: "HasSystemAccess", label: "System Access", oldKey: "originalHassystemaccess" }
+                { name: "FullName",        label: "Name",              oldKey: "originalName" },
+                { name: "Email",           label: "Email",             oldKey: "originalEmail" },
+                { name: "Phone",           label: "Phone",             oldKey: "originalPhone" },
+                { name: "Gender",          label: "Gender",            oldKey: "originalGender" },
+                { name: "DepartmentId",    label: "Department",        oldKey: "originalDepartmentLabel" },
+                { name: "DesignationId",   label: "Designation",       oldKey: "originalDesignationLabel" },
+                { name: "EmployeeTypeId",  label: "Employee Type",     oldKey: "originalEmployeeTypeLabel" },  // ← Added this!
+                { name: "HasSystemAccess", label: "System Access",     oldKey: "originalHasSystemAccess" }     // ← Fixed capitalization
             ]
         });
     </script>

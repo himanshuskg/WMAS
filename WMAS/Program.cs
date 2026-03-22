@@ -2,8 +2,10 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using WMAS.Contracts;
 using WMAS.Data;
 using WMAS.Data.Seed;
+using WMAS.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +16,8 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders().AddDefaultUI();
+builder.Services.AddScoped<ICommonService, CommonService>();
+builder.Services.AddScoped<IEncryptionService, EncryptionService>();
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Events.OnValidatePrincipal = async context =>

@@ -1,66 +1,240 @@
 ﻿@model WMAS.Models.Employee
+@{
+    ViewData["Title"] = $"{Model.FullName} - Details";
+}
 
-<h2>Employee Details</h2>
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="mb-0">
+            <i class="bi bi-person-circle me-2 text-primary"></i>
+            Employee Details
+        </h3>
+        <div>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to List
+            </a>
+        </div>
+    </div>
 
-<div class="card mt-3">
-    <div class="card-body">
-
-        <h5>Basic Information</h5>
-        <p><strong>Name:</strong> @Model.FullName</p>
-        <p><strong>Email:</strong> @Model.Email</p>
-        <p><strong>Phone:</strong> @Model.Phone</p>
-        <p><strong>Department:</strong> @Model.Department?.DepartmentName</p>
-        <p><strong>Designation:</strong> @Model.Designation?.Title</p>
-
-        <hr />
-        @if (Model.HasSystemAccess)
-        {
-            <div class="card mt-3">
-                <div class="card-body">
-                    <h5>System Access</h5>
-                    <p>
-                        <strong>Generated Password:</strong>
-                        @Model.GeneratedPassword
-                    </p>
-
-                    <p>
-                        <strong>Password Reset Count:</strong>
-                        @Model.PasswordResetCount
-                    </p>
-
-                    <button class="btn btn-danger btn-sm" onclick="openConfirmAction(
-                        {
-                            title: 'Reset Password',
-                            message: 'A new temporary password will be generated for this employee.',
-                            buttonText: 'Reset Password',
-                            controller: 'Employee',
-                            action: 'ResetPassword',
-                            id: @Model.EmployeeId
-                        })">
-                        Reset Password
-                    </button>
-
-                </div>
-            </div>
-        }
-
-        <h5>System Status</h5>
-        <p>
-            <strong>System Access:</strong>
-            @(Model.HasSystemAccess ? "Yes" : "No")
-        </p>
-
-        <p>
-            <strong>Account Status:</strong>
-            @(Model.IsActive ? "Active" : "Inactive")
-        </p>
-
-        <hr />
-
-        <div class="d-flex gap-2">
-            <a asp-action="Edit" asp-route-id="@Model.EmployeeId" class="btn btn-primary">Edit</a>
-            <a asp-action="Index" class="btn btn-secondary">Back</a>
+    <div class="card shadow border-0 rounded-3">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-3">
+            <h5 class="mb-0">
+                <i class="bi bi-info-circle me-2"></i>
+                @Model.FullName
+            </h5>
+            <span class="badge bg-light text-dark fs-6">
+                @(Model.IsActive ? "Active" : "Inactive")
+            </span>
         </div>
 
+        <div class="card-body p-4">
+            <div class="row g-4">
+                <!-- Left Column: Personal Info -->
+                <div class="col-lg-6">
+                    <h6 class="text-muted fw-semibold mb-3 border-bottom pb-2">
+                        Basic Information
+                    </h6>
+
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4 text-muted">Full Name</dt>
+                        <dd class="col-sm-8">@Model.FullName</dd>
+
+                        <dt class="col-sm-4 text-muted">Email</dt>
+                        <dd class="col-sm-8">
+                            <a href="mailto:@Model.Email">@Model.Email</a>
+                        </dd>
+
+                        <dt class="col-sm-4 text-muted">Phone</dt>
+                        <dd class="col-sm-8">
+                            @if (!string.IsNullOrEmpty(Model.Phone))
+                            {
+                                <a href="tel:@Model.Phone">@Model.Phone</a>
+                            }
+                            else
+                            {
+                                <span class="text-muted">Not provided</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-4 text-muted">Gender</dt>
+                        <dd class="col-sm-8">@Model.Gender</dd>
+
+                        <dt class="col-sm-4 text-muted">Date of Birth</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.DateOfBirth != default)
+                            {
+                                @Model.DateOfBirth.ToString("dd MMM yyyy")
+                                <small class="text-muted ms-2">
+                                    (@(DateTime.Today.Year - Model.DateOfBirth.Year) years)
+                                </small>
+                            }
+                            else
+                            {
+                                <span class="text-muted">Not provided</span>
+                            }
+                        </dd>
+                    </dl>
+                </div>
+
+                <!-- Right Column: Work Info -->
+                <div class="col-lg-6">
+                    <h6 class="text-muted fw-semibold mb-3 border-bottom pb-2">
+                        Work Information
+                    </h6>
+
+                    <!-- Inside the Work Information column -->
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4 text-muted">Department</dt>
+                        <dd class="col-sm-8">@(Model.Department?.DepartmentName ?? "Not assigned")</dd>
+
+                        <dt class="col-sm-4 text-muted">Designation</dt>
+                        <dd class="col-sm-8">@(Model.Designation?.Title ?? "Not assigned")</dd>
+
+                        <dt class="col-sm-4 text-muted">Employee Type</dt>
+                        <dd class="col-sm-8">@(Model.EmployeeType?.Name ?? "Not assigned")</dd>
+
+                        <dt class="col-sm-4 text-muted">Joining Date</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.JoiningDate != default)
+                            {
+                                @Model.JoiningDate.ToString("dd MMM yyyy")
+                            }
+                            else
+                            {
+                                <span class="text-muted">Not set</span>
+                            }
+                        </dd>
+
+                        <dt class="col-sm-4 text-muted">Salary</dt>
+                        <dd class="col-sm-8">
+                            @if (Model.Salary > 0)
+                            {
+                                @Model.Salary.ToString("C0")
+                            }
+                            else
+                            {
+                                <span class="text-muted">Not set</span>
+                            }
+                        </dd>
+                        <dt class="col-sm-4 text-muted">Joining Date</dt>
+                        <dd class="col-sm-8">
+                            @Model.JoiningDate.ToString("dd MMM yyyy")
+                            <small class="text-muted ms-2">
+                                (@(CalculateTenure(Model.JoiningDate)) with us)
+                            </small>
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- System Access Section -->
+            <hr class="my-4" />
+
+            <div class="row">
+                <div class="col-lg-6">
+                    <h6 class="text-muted fw-semibold mb-3 border-bottom pb-2">
+                        System Access & Status
+                    </h6>
+
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5 text-muted">Has System Access</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge @(Model.HasSystemAccess ? "bg-success" : "bg-secondary")">
+                                @(Model.HasSystemAccess ? "Yes" : "No")
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-5 text-muted">Account Status</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge @(Model.IsActive ? "bg-success" : "bg-danger")">
+                                @(Model.IsActive ? "Active" : "Inactive")
+                            </span>
+                        </dd>
+                    </dl>
+                </div>
+
+                <!-- Reset Password (only if has access) -->
+                @if (Model.HasSystemAccess)
+                {
+                    <div class="col-lg-6 mt-4 mt-lg-0">
+                        <div class="card border-danger">
+                            <div class="card-body">
+                                <h6 class="text-danger mb-3">
+                                    <i class="bi bi-key-fill me-2"></i>
+                                    Password Management
+                                </h6>
+
+                                <p class="small text-muted mb-2">
+                                    <strong>Reset Count:</strong> @Model.PasswordResetCount
+                                </p>
+
+                                @if (!string.IsNullOrEmpty(Model.GeneratedPassword))
+                                {
+                                    <p class="small mb-3">
+                                        <strong>Last Temp Password:</strong>
+                                        <code class="bg-light px-2 py-1 rounded">@Model.GeneratedPassword</code>
+                                    </p>
+                                }
+
+                                <button class="btn btn-danger btn-sm"
+                                        onclick="openConfirmAction({
+                                                        title: 'Reset Password',
+                                                        message: 'A new temporary password will be generated and shown only once.',
+                                                        buttonText: 'Confirm Reset',
+                                                        controller: 'Employee',
+                                                        action: 'ResetPassword',
+                                                        id: @Model.EmployeeId
+                                                    })">
+                                    <i class="bi bi-arrow-repeat me-1"></i> Reset Password
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-5 d-flex gap-3 justify-content-end">
+                <a asp-action="Edit" asp-route-id="@Model.EmployeeId" class="btn btn-primary px-4">
+                    <i class="bi bi-pencil-square me-1"></i> Edit Employee
+                </a>
+                <a asp-action="Index" class="btn btn-outline-secondary px-4">
+                    Back to List
+                </a>
+            </div>
+        </div>
     </div>
 </div>
+
+@functions {
+    private string CalculateTenure(DateOnly joining)
+    {
+        var today = DateOnly.FromDateTime(DateTime.Today);
+
+        // Calculate total days difference
+        int totalDays = today.DayNumber - joining.DayNumber;
+
+        // Years
+        int years = totalDays / 365;
+        int remainingDaysAfterYears = totalDays % 365;
+
+        // Months (approximate - using average month length isn't needed here)
+        int months = remainingDaysAfterYears / 30;
+        int days = remainingDaysAfterYears % 30;
+
+        // Build readable string
+        var parts = new List<string>();
+
+        if (years > 0)
+            parts.Add($"{years} year{(years > 1 ? "s" : "")}");
+
+        if (months > 0)
+            parts.Add($"{months} month{(months > 1 ? "s" : "")}");
+
+        if (days > 0 || (years == 0 && months == 0))
+            parts.Add($"{days} day{(days != 1 ? "s" : "")}");
+
+        return string.Join(", ", parts);
+    }
+
+}
