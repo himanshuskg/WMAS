@@ -35,6 +35,7 @@ namespace WMAS.Controllers
                 ViewBag.TotalEmployees = await _context.Employees.CountAsync();
                 ViewBag.ActiveEmployees = await _context.Employees.CountAsync(e => e.IsActive);
                 ViewBag.PendingLeaves = await _context.Leaves.CountAsync(l => l.Status == "Pending");
+                ViewBag.TodayPresent = await _context.Attendances.CountAsync(a => a.Date == DateTime.Today && a.Status == "Present");
 
                 return View("AdminDashboard");
             }

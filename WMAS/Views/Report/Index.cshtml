@@ -1,0 +1,149 @@
+﻿@{
+    ViewData["Title"] = "Reports";
+    int month = ViewBag.Month != null ? (int)ViewBag.Month : DateTime.Today.Month;
+    int year = ViewBag.Year != null ? (int)ViewBag.Year : DateTime.Today.Year;
+}
+
+<div class="container mt-3">
+
+    <!-- Header + Filter -->
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-header bg-primary text-white py-1">
+            <span class="small fw-semibold">
+                <i class="bi bi-bar-chart-line me-1"></i>
+                Reports — @(new DateTime(year, month, 1).ToString("MMMM yyyy"))
+            </span>
+        </div>
+        <div class="card-body py-2">
+            <form method="get" class="row g-2 align-items-end">
+                <div class="col-auto">
+                    <label class="form-label small mb-1">Month</label>
+                    <select name="month" class="form-select form-select-sm">
+                        @for (int m = 1; m <= 12; m++)
+                        {
+                            <option value="@m" selected="@(m == month)">
+                                @(new DateTime(year, m, 1).ToString("MMMM"))
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <label class="form-label small mb-1">Year</label>
+                    <select name="year" class="form-select form-select-sm">
+                        @for (int y = DateTime.Today.Year; y >= DateTime.Today.Year - 3; y--)
+                        {
+                            <option value="@y" selected="@(y == year)">@y</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary btn-sm">
+                        <i class="bi bi-funnel me-1"></i>Generate
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Employee Summary -->
+    <h6 class="text-muted fw-semibold mb-2">
+        <i class="bi bi-people me-1"></i>Employee Overview
+    </h6>
+    <div class="row g-2 mb-3">
+        <div class="col-sm-3">
+            <div class="card border-0 shadow-sm text-center py-2">
+                <div class="fw-bold fs-4 text-primary">@ViewBag.TotalEmployees</div>
+                <div class="text-muted" style="font-size:11px">Total Employees</div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="card border-0 shadow-sm text-center py-2">
+                <div class="fw-bold fs-4 text-success">@ViewBag.ActiveEmployees</div>
+                <div class="text-muted" style="font-size:11px">Active</div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="card border-0 shadow-sm text-center py-2">
+                <div class="fw-bold fs-4 text-danger">
+                    @((int)ViewBag.TotalEmployees - (int)ViewBag.ActiveEmployees)
+                </div>
+                <div class="text-muted" style="font-size:11px">Inactive</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Attendance Summary -->
+    <h6 class="text-muted fw-semibold mb-2">
+        <i class="bi bi-calendar-check me-1"></i>
+        Attendance — @(new DateTime(year, month, 1).ToString("MMMM yyyy"))
+    </h6>
+    <div class="row g-2 mb-3">
+        <div class="col-sm-3">
+            <div class="card border-0 shadow-sm text-center py-2">
+                <div class="fw-bold fs-4 text-success">@ViewBag.TotalPresent</div>
+                <div class="text-muted" style="font-size:11px">Present Records</div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="card border-0 shadow-sm text-center py-2">
+                <div class="fw-bold fs-4 text-danger">@ViewBag.TotalAbsent</div>
+                <div class="text-muted" style="font-size:11px">Absent Records</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leave Summary -->
+    <h6 class="text-muted fw-semibold mb-2">
+        <i class="bi bi-calendar-minus me-1"></i>
+        Leave Summary — @(new DateTime(year, month, 1).ToString("MMMM yyyy"))
+    </h6>
+    <div class="row g-2 mb-3">
+        <div class="col-sm-3">
+            <div class="card border-0 shadow-sm text-center py-2">
+                <div class="fw-bold fs-4">@ViewBag.TotalLeaves</div>
+                <div class="text-muted" style="font-size:11px">Total Requests</div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="card border-0 shadow-sm text-center py-2">
+                <div class="fw-bold fs-4 text-success">@ViewBag.ApprovedLeaves</div>
+                <div class="text-muted" style="font-size:11px">Approved</div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="card border-0 shadow-sm text-center py-2">
+                <div class="fw-bold fs-4 text-warning">@ViewBag.PendingLeaves</div>
+                <div class="text-muted" style="font-size:11px">Pending</div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="card border-0 shadow-sm text-center py-2">
+                <div class="fw-bold fs-4 text-danger">@ViewBag.RejectedLeaves</div>
+                <div class="text-muted" style="font-size:11px">Rejected</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payroll Summary -->
+    <h6 class="text-muted fw-semibold mb-2">
+        <i class="bi bi-cash-stack me-1"></i>
+        Payroll Summary — @(new DateTime(year, month, 1).ToString("MMMM yyyy"))
+    </h6>
+    <div class="row g-2 mb-3">
+        <div class="col-sm-3">
+            <div class="card border-0 shadow-sm text-center py-2">
+                <div class="fw-bold fs-4 text-primary">@ViewBag.PayrollCount</div>
+                <div class="text-muted" style="font-size:11px">Records Generated</div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="card border-0 shadow-sm text-center py-2">
+                <div class="fw-bold fs-5 text-success">
+                    ₹@(((decimal)ViewBag.TotalPayroll).ToString("N0"))
+                </div>
+                <div class="text-muted" style="font-size:11px">Total Net Payable</div>
+            </div>
+        </div>
+    </div>
+
+</div>

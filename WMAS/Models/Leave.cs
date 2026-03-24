@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using WMAS.Models.Common;
 
 namespace WMAS.Models
@@ -24,5 +26,14 @@ namespace WMAS.Models
         [StringLength(250)]
         public string? Reason { get; set; }
         public string Status { get; set; } = "Pending";
+        public DateTime? ActionOn { get; set; }  
+        public int? ActionById { get; set; }  
+
+        [ForeignKey("ActionById")]
+        [ValidateNever]
+        public Employee? ActionBy { get; set; }
+
+        [StringLength(250)]
+        public string? ActionComments{ get; set; }
     }
 }

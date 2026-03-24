@@ -1,0 +1,118 @@
+﻿@model IEnumerable<WMAS.Models.Attendance>
+
+@{
+    ViewData["Title"] = "My Attendance";
+    int month = (int)ViewBag.Month;
+    int year = (int)ViewBag.Year;
+}
+
+<div class="container mt-4">
+    <h4 class="mb-3"><i class="bi bi-person-check me-2"></i>My Attendance</h4>
+
+    <!-- Month/Year filter -->
+    <form method="get" class="row g-2 align-items-end mb-4">
+        <div class="col-auto">
+            <label class="form-label fw-semibold mb-1">Month</label>
+            <select name="month" class="form-select form-select-sm">
+                @for (int m = 1; m <= 12; m++)
+                {
+                    <option value="@m" selected="@(m == month)">
+                        @(new DateTime(year, m, 1).ToString("MMMM"))
+                    </option>
+                }
+            </select>
+        </div>
+        <div class="col-auto">
+            <label class="form-label fw-semibold mb-1">Year</label>
+            <select name="year" class="form-select form-select-sm">
+                @for (int y = DateTime.Today.Year; y >= DateTime.Today.Year - 2; y--)
+                {
+                    <option value="@y" selected="@(y == year)">@y</option>
+                }
+            </select>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+        </div>
+    </form>
+
+    <!-- Summary cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-sm-4">
+            <div class="card border-success text-center py-3">
+                <div class="fs-2 fw-bold text-success">@ViewBag.Present</div>
+                <div class="text-muted small">Present Days</div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="card border-danger text-center py-3">
+                <div class="fs-2 fw-bold text-danger">@ViewBag.Absent</div>
+                <div class="text-muted small">Absent Days</div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="card border-warning text-center py-3">
+                <div class="fs-2 fw-bold text-warning">@ViewBag.Leave</div>
+                <div class="text-muted small">On Leave</div>
+            </div>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center text-muted py-4">
+            <i class="bi bi-calendar-x fs-1"></i>
+            <p class="mt-2">No attendance records for this period.</p>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Date</th>
+                            <th>Day</th>
+                            <th>Status</th>
+                            <th>Check In</th>
+                            <th>Check Out</th>
+                            <th>Hours</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var a in Model)
+                        {
+                            var hours = (a.CheckInTime.HasValue && a.CheckOutTime.HasValue)
+                                ? (a.CheckOutTime.Value - a.CheckInTime.Value).TotalHours.ToString("F1") + "h"
+                                : "—";
+                            <tr>
+                                <td>@a.Date.ToString("dd MMM yyyy")</td>
+                                <td class="text-muted">@a.Date.ToString("dddd")</td>
+                                <td>
+                                    @if (a.Status == "Present")
+                                    {
+                                        <span class="badge bg-success">Present</span>
+                                    }
+                                    else if (a.Status == "Absent")
+                                    {
+
+                                        <span class="badge bg-danger">Absent</span>
+                                    }
+                                    else
+                                    {
+
+                                        <span class="badge bg-warning text-dark">Leave</span>
+                                    }
+                                </td>
+                                <td>@(a.CheckInTime?.ToString("hh:mm tt") ?? "—")</td>
+                                <td>@(a.CheckOutTime?.ToString("hh:mm tt") ?? "—")</td>
+                                <td class="text-muted">@hours</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

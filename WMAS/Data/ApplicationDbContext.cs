@@ -44,6 +44,10 @@ namespace WMAS.Data
             builder.Entity<Employee>().HasOne(e => e.Designation)
                                       .WithMany().HasForeignKey(e => e.DesignationId)
                                       .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<Leave>().HasOne(l => l.ActionBy)
+                                   .WithMany().HasForeignKey(l => l.ActionById)
+                                   .OnDelete(DeleteBehavior.Restrict);
+
             builder.Entity<EmployeeType>().HasData(
                 new EmployeeType { Id = 1, Name = "Permanent", IsActive = true },
                 new EmployeeType { Id = 2, Name = "Temporary", IsActive = true },

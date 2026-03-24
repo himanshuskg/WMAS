@@ -622,6 +622,16 @@ namespace WMAS.Data.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LeaveId"));
 
+                    b.Property<int?>("ActionById")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ActionComments")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<int?>("ActionOn")
+                        .HasColumnType("int");
+
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
 
@@ -657,6 +667,8 @@ namespace WMAS.Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.HasKey("LeaveId");
+
+                    b.HasIndex("ActionById");
 
                     b.HasIndex("EmployeeId");
 
@@ -833,7 +845,8 @@ namespace WMAS.Data.Migrations
 
                     b.HasOne("WMAS.Models.Employee", "ReportingManager")
                         .WithMany("Subordinates")
-                        .HasForeignKey("ReportingManagerId");
+                        .HasForeignKey("ReportingManagerId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Department");
 
@@ -846,11 +859,18 @@ namespace WMAS.Data.Migrations
 
             modelBuilder.Entity("WMAS.Models.Leave", b =>
                 {
+                    b.HasOne("WMAS.Models.Employee", "ActionBy")
+                        .WithMany()
+                        .HasForeignKey("ActionById")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("WMAS.Models.Employee", "Employee")
                         .WithMany()
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("ActionBy");
 
                     b.Navigation("Employee");
                 });

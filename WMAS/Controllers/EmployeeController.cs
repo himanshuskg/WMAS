@@ -135,7 +135,7 @@ namespace WMAS.Controllers
                 string? encryptedPassword = null;
                 string? userId = null;
 
-                // ✅ Create user FIRST
+                //  Create user FIRST
                 if (request.HasSystemAccess)
                 {
                     var result = await _commonService.CreateUserAsync(request.Email);
@@ -159,7 +159,7 @@ namespace WMAS.Controllers
                         $"Employee created. Temporary password: {result.Password}";
                 }
 
-                // ✅ Save employee ONCE
+                //  Save employee ONCE
                 var employee = new Employee
                 {
                     FullName = request.FullName,
@@ -205,7 +205,7 @@ namespace WMAS.Controllers
 
             var vm = new EmployeeCreateUpdateViewModel
             {
-                Id = employee.EmployeeId, // ✅ FIXED
+                Id = employee.EmployeeId, //  FIXED
                 FullName = employee.FullName,
                 Email = employee.Email,
                 Phone = employee.Phone,
@@ -260,7 +260,7 @@ namespace WMAS.Controllers
                 employee.Salary = model.Salary;
                 employee.IsActive = model.IsActive;
 
-                // ✅ System access logic
+                //  System access logic
                 if (!employee.HasSystemAccess && model.HasSystemAccess)
                 {
                     var result = await _commonService.CreateUserAsync(employee.Email);

@@ -1,0 +1,175 @@
+﻿@model IEnumerable<WMAS.Models.Salary>
+@using WMAS.Models
+
+@{
+    ViewData["Title"] = "Payroll";
+    int month = ViewBag.Month != null ? (int)ViewBag.Month : DateTime.Today.Month;
+    int year = ViewBag.Year != null ? (int)ViewBag.Year : DateTime.Today.Year;
+    int? empId = ViewBag.EmployeeId as int?;
+    var employees = ViewBag.Employees as List<Employee>;
+}
+
+<div class="container mt-3">
+
+    <!-- Header -->
+    <div class="card shadow-sm border-0 mb-2">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-1">
+            <span class="small fw-semibold">
+                <i class="bi bi-cash-stack me-1"></i>
+                Payroll — @(new DateTime(year, month, 1).ToString("MMMM yyyy"))
+            </span>
+            <div class="d-flex gap-2">
+                <a asp-action="Upsert" class="btn btn-light btn-sm">+ Add Record</a>
+
+                <!-- Generate bulk -->
+                <form asp-action="GenerateBulk" method="post" class="d-inline"
+                      onsubmit="return confirm('Generate payroll for all active employees for this month? Existing records will be skipped.')">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="month" value="@month" />
+                    <input type="hidden" name="year" value="@year" />
+                    <button type="submit" class="btn btn-success btn-sm">
+                        <i class="bi bi-lightning-charge me-1"></i>Generate All
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <form method="get" class="card shadow-sm border-0 mb-2">
+        <div class="card-body py-2">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label small mb-1">Employee</label>
+                    <select name="employeeId" class="form-select form-select-sm">
+                        <option value="">— All —</option>
+                        @foreach (var e in employees!)
+                        {
+                            <option value="@e.EmployeeId"
+                                    selected="@(empId == e.EmployeeId)">
+                                @e.FullName
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <label class="form-label small mb-1">Month</label>
+                    <select name="month" class="form-select form-select-sm">
+                        @for (int m = 1; m <= 12; m++)
+                        {
+                            <option value="@m" selected="@(m == month)">
+                                @(new DateTime(year, m, 1).ToString("MMMM"))
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <label class="form-label small mb-1">Year</label>
+                    <select name="year" class="form-select form-select-sm">
+                        @for (int y = DateTime.Today.Year; y >= DateTime.Today.Year - 3; y--)
+                        {
+                            <option value="@y" selected="@(y == year)">@y</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- Summary Cards -->
+    @if (Model.Any())
+    {
+        <div class="row g-2 mb-2">
+            <div class="col-sm-4">
+                <div class="card border-0 shadow-sm text-center py-2">
+                    <div class="fw-bold text-primary">
+                        ₹@ViewBag.TotalBasic.ToString("N0")
+                    </div>
+                    <div class="text-muted" style="font-size:11px">Total Basic Pay</div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="card border-0 shadow-sm text-center py-2">
+                    <div class="fw-bold text-danger">
+                        ₹@ViewBag.TotalDeduct.ToString("N0")
+                    </div>
+                    <div class="text-muted" style="font-size:11px">Total Deductions</div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="card border-0 shadow-sm text-center py-2">
+                    <div class="fw-bold text-success">
+                        ₹@ViewBag.TotalNet.ToString("N0")
+                    </div>
+                    <div class="text-muted" style="font-size:11px">Total Net Payable</div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Table -->
+    @if (!Model.Any())
+    {
+        <div class="text-center text-muted py-5">
+            <i class="bi bi-cash fs-1"></i>
+            <p class="mt-2 small">No payroll records for this period.</p>
+            <p class="small">Use <strong>Generate All</strong> to auto-create records for all active employees.</p>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm border-0">
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead class="table-primary small">
+                        <tr>
+                            <th>Employee</th>
+                            <th>Month/Year</th>
+                            <th class="text-end">Basic Pay</th>
+                            <th class="text-end">Allowances</th>
+                            <th class="text-end">Deductions</th>
+                            <th class="text-end">Net Salary</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="small">
+                        @foreach (var s in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="fw-semibold">@s.Employee?.FullName</div>
+                                </td>
+                                <td>@(new DateTime(s.Year, s.Month, 1).ToString("MMM yyyy"))</td>
+                                <td class="text-end">₹@s.BasicPay.ToString("N2")</td>
+                                <td class="text-end text-success">+₹@s.Allowances.ToString("N2")</td>
+                                <td class="text-end text-danger">-₹@s.Deductions.ToString("N2")</td>
+                                <td class="text-end fw-semibold text-primary">
+                                    ₹@s.NetSalary.ToString("N2")
+                                </td>
+                                <td class="text-end">
+                                    <a asp-action="Upsert" asp-route-id="@s.SalaryId"
+                                           class="btn btn-outline-primary btn-sm">
+                                        Edit
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot class="table-light small fw-semibold">
+                        <tr>
+                            <td colspan="2">Total (@Model.Count() employees)</td>
+                            <td class="text-end">₹@ViewBag.TotalBasic.ToString("N2")</td>
+                            <td></td>
+                            <td class="text-end text-danger">-₹@ViewBag.TotalDeduct.ToString("N2")</td>
+                            <td class="text-end text-success">₹@ViewBag.TotalNet.ToString("N2")</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    }
+</div>

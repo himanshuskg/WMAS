@@ -1,0 +1,197 @@
+﻿@model WMAS.Models.Salary
+@using WMAS.Models
+
+@{
+    ViewData["Title"] = Model.SalaryId == 0 ? "Add Salary Record" : "Edit Salary Record";
+    var employees = ViewBag.Employees as List<Employee>;
+    bool isEdit   = Model.SalaryId != 0;
+}
+
+<div class="container mt-3">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+            <div class="card shadow border-0 rounded-4">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h5 class="mb-0">
+                        <i class="bi bi-cash-coin me-2"></i>
+                        @(isEdit ? "Edit Salary Record" : "Add Salary Record")
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger small">
+                            <ul class="mb-0">
+                                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                {
+                                    <li>@error.ErrorMessage</li>
+                                }
+                            </ul>
+                        </div>
+                    }
+
+                    <form asp-action="Upsert" method="post">
+                        @Html.AntiForgeryToken()
+                        <input asp-for="SalaryId" type="hidden" />
+
+                        <!-- Employee -->
+                        <div class="mb-3">
+                            <label asp-for="EmployeeId" class="form-label fw-semibold">Employee</label>
+                            @if (isEdit)
+                            {
+                                <select asp-for="EmployeeId" class="form-select select2-single" disabled>
+                                    <option value="">— Select Employee —</option>
+                                    @foreach (var e in employees!)
+                                    {
+                                        <option value="@e.EmployeeId"
+                                                selected="@(Model.EmployeeId == e.EmployeeId)">
+                                            @e.FullName
+                                        </option>
+                                    }
+                                </select>
+                                <input type="hidden" asp-for="EmployeeId" />
+                            }
+                            else
+                            {
+                                <select asp-for="EmployeeId" class="form-select select2-single">
+                                    <option value="">— Select Employee —</option>
+                                    @foreach (var e in employees!)
+                                    {
+                                        <option value="@e.EmployeeId"
+                                                selected="@(Model.EmployeeId == e.EmployeeId)">
+                                            @e.FullName
+                                        </option>
+                                    }
+                                </select>
+                            }
+                            <span asp-validation-for="EmployeeId" class="text-danger small"></span>
+                        </div>
+
+
+                        <!-- Month / Year -->
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Month" class="form-label fw-semibold">Month</label>
+                            @if (isEdit)
+                            {
+                                <select asp-for="Month" class="form-select" disabled>
+                                    @for (int m = 1; m <= 12; m++)
+                                    {
+                                        <option value="@m" selected="@(Model.Month == m)">
+                                            @(new DateTime(2000, m, 1).ToString("MMMM"))
+                                        </option>
+                                    }
+                                </select>
+                                <input type="hidden" asp-for="Month" />
+                            }
+                            else
+                            {
+                                <select asp-for="Month" class="form-select">
+                                    @for (int m = 1; m <= 12; m++)
+                                    {
+                                        <option value="@m" selected="@(Model.Month == m)">
+                                            @(new DateTime(2000, m, 1).ToString("MMMM"))
+                                        </option>
+                                    }
+                                </select>
+                            }
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label asp-for="Year" class="form-label fw-semibold">Year</label>
+                            @if (isEdit)
+                            {
+                                <select asp-for="Year" class="form-select" disabled>
+                                    @for (int y = DateTime.Today.Year; y >= DateTime.Today.Year - 3; y--)
+                                    {
+                                        <option value="@y" selected="@(Model.Year == y)">@y</option>
+                                    }
+                                </select>
+                                <input type="hidden" asp-for="Year" />
+                            }
+                            else
+                            {
+                                <select asp-for="Year" class="form-select">
+                                    @for (int y = DateTime.Today.Year; y >= DateTime.Today.Year - 3; y--)
+                                    {
+                                        <option value="@y" selected="@(Model.Year == y)">@y</option>
+                                    }
+                                </select>
+                            }
+                        </div>
+
+                        <!-- Pay fields -->
+                        <div class="mb-3">
+                            <label asp-for="BasicPay" class="form-label fw-semibold">Basic Pay (₹)</label>
+                            <input asp-for="BasicPay" type="number" step="0.01" min="0"
+                                   class="form-control" id="basicPay" />
+                            <span asp-validation-for="BasicPay" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Allowances" class="form-label fw-semibold">
+                                Allowances (₹)
+                                <span class="text-muted fw-normal small">(HRA, TA, etc.)</span>
+                            </label>
+                            <input asp-for="Allowances" type="number" step="0.01" min="0"
+                                   class="form-control" id="allowances" />
+                            <span asp-validation-for="Allowances" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Deductions" class="form-label fw-semibold">
+                                Deductions (₹)
+                                <span class="text-muted fw-normal small">(PF, tax, etc.)</span>
+                            </label>
+                            <input asp-for="Deductions" type="number" step="0.01" min="0"
+                                   class="form-control" id="deductions" />
+                            <span asp-validation-for="Deductions" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Live Net Salary preview -->
+                        <div class="alert alert-info py-2 mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="fw-semibold">Net Salary Preview</span>
+                                <span class="fs-5 fw-bold text-primary" id="netPreview">
+                                    ₹@Model.NetSalary.ToString("N2")
+                                </span>
+                            </div>
+                            <small class="text-muted">Basic Pay + Allowances − Deductions</small>
+                        </div>
+
+                        <input asp-for="NetSalary" type="hidden" id="netSalary" />
+
+                        <div class="d-flex justify-content-between mt-2">
+                            <a asp-action="Index" class="btn btn-outline-secondary">← Back</a>
+                            <button type="submit" class="btn btn-success px-4">
+                                <i class="bi bi-save me-1"></i>
+                                @(isEdit ? "Update" : "Save")
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        $(document).ready(function () {
+            $('.select2-single').select2({ placeholder: "Select", allowClear: true, width: '100%' });
+        });
+
+        function recalc() {
+            var basic  = parseFloat($('#basicPay').val())   || 0;
+            var allow  = parseFloat($('#allowances').val())  || 0;
+            var deduct = parseFloat($('#deductions').val())  || 0;
+            var net    = basic + allow - deduct;
+            if (net < 0) net = 0;
+            $('#netPreview').text('₹' + net.toLocaleString('en-IN', {minimumFractionDigits:2}));
+            $('#netSalary').val(net.toFixed(2));
+        }
+
+        $('#basicPay, #allowances, #deductions').on('input', recalc);
+        recalc(); // run on load for edit mode
+    </script>
+}
