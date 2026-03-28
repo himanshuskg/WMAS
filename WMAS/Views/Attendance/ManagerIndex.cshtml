@@ -1,0 +1,154 @@
+﻿@model IEnumerable<WMAS.Models.Attendance>
+@using WMAS.Models
+
+@{
+    ViewData["Title"] = "Team Attendance";
+    var teamMembers = ViewBag.TeamMembers as List<Employee> ?? new();
+    DateOnly? selDate = ViewBag.SelectedDate as DateOnly?;
+    int? selEmpId = ViewBag.SelectedEmployeeId as int?;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h4 class="mb-0 fw-bold">
+            <i class="bi bi-people me-2"></i>Team Attendance
+        </h4>
+        <small class="text-muted">@ViewBag.ManagerName's Team</small>
+    </div>
+    <span class="badge bg-warning text-dark">Manager View</span>
+</div>
+
+<!-- Filters -->
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body py-2">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label small mb-1">Date</label>
+                <input type="date" name="date"
+                       value="@selDate?.ToString("yyyy-MM-dd")"
+                       class="form-control form-control-sm" />
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small mb-1">Team Member</label>
+                <select name="employeeId" class="form-select form-select-sm">
+                    <option value="">— All —</option>
+                    @foreach (var emp in teamMembers)
+                    {
+                        <option value="@emp.EmployeeId"
+                                selected="@(selEmpId == emp.EmployeeId)">
+                            @emp.FullName
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit"
+                        class="btn btn-primary btn-sm w-100">
+                    <i class="bi bi-funnel me-1"></i>Filter
+                </button>
+            </div>
+            <div class="col-md-2">
+                <a asp-action="ManagerIndex"
+                       class="btn btn-outline-secondary btn-sm w-100">
+                    <i class="bi bi-x-circle me-1"></i>Clear
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="text-center text-muted py-5">
+        <i class="bi bi-calendar-x fs-1"></i>
+        <p class="mt-2">No attendance records found.</p>
+    </div>
+}
+else
+{
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle mb-0">
+                <thead class="table-warning small">
+                    <tr>
+                        <th>Employee</th>
+                        <th class="text-center">Date</th>
+                        <th class="text-center">Check In</th>
+                        <th class="text-center">Check Out</th>
+                        <th class="text-center">Hours</th>
+                        <th class="text-center">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="small">
+                    @foreach (var a in Model)
+                    {
+                        double? hours = null;
+                        string hoursText = "—";
+                        string rowClass = "";
+
+                        if (a.CheckInTime != null && a.CheckOutTime != null)
+                        {
+                            hours = (a.CheckOutTime.Value - a.CheckInTime.Value).TotalHours;
+                            hoursText = $"{(int)hours}h {(a.CheckOutTime.Value - a.CheckInTime.Value).Minutes}m";
+                            rowClass = hours < 7.75 ? "table-warning" : "";
+                        }
+
+                        <tr class="@rowClass">
+                            <td class="fw-semibold">
+                                @a.Employee?.FullName
+                            </td>
+                            <td class="text-center">
+                                @a.Date.ToString("dd MMM yyyy")
+                                @if (a.Date == DateTime.Today)
+                                {
+                                    <span class="badge bg-primary ms-1 small">Today</span>
+                                }
+                            </td>
+                            <td class="text-center text-success">
+                                @(a.CheckInTime?.ToString("hh:mm tt") ?? "—")
+                            </td>
+                            <td class="text-center text-danger">
+                                @(a.CheckOutTime?.ToString("hh:mm tt") ?? "—")
+                            </td>
+                            <td class="text-center">
+                                @if (hours != null && hours < 7.75)
+                                {
+                                    <span class="text-warning fw-semibold">
+                                        @hoursText
+                                        <i class="bi bi-exclamation-triangle ms-1"
+                                           title="Less than 7h 45m — Half Day"></i>
+                                    </span>
+                                }
+                                else
+                                {
+                                    @hoursText
+                                }
+                            </td>
+                            <td class="text-center">
+                                @if (a.CheckOutTime == null && a.CheckInTime != null)
+                                {
+                                    <span class="badge bg-success">Active</span>
+                                }
+                                else if (hours != null && hours < 7.75)
+                                {
+                                    <span class="badge bg-warning text-dark">Half Day</span>
+                                }
+                                else if (a.CheckInTime != null)
+                                {
+                                    <span class="badge bg-primary">Present</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">Absent</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer bg-transparent small text-muted">
+            Showing @Model.Count() record(s)
+        </div>
+    </div>
+}

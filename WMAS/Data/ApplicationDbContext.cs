@@ -88,13 +88,17 @@ namespace WMAS.Data
             {
                 if (entry.State == EntityState.Added)
                 {
-                    entry.Entity.CreatedOn = DateTime.UtcNow;
+                    entry.Entity.CreatedOn = DateTime.Now;
                     entry.Entity.CreatedBy = userId;
+                    entry.Entity.UpdatedOn = null;           
+                    entry.Entity.UpdatedBy = null;
                 }
                 else if (entry.State == EntityState.Modified)
                 {
-                    entry.Entity.UpdatedOn = DateTime.UtcNow;
+                    entry.Entity.UpdatedOn = DateTime.Now;
                     entry.Entity.UpdatedBy = userId;
+                    entry.Property(e => e.CreatedOn).IsModified = false;
+                    entry.Property(e => e.CreatedBy).IsModified = false;
                 }
             }
             return await base.SaveChangesAsync(cancellationToken);

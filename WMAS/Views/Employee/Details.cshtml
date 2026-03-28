@@ -1,6 +1,7 @@
 ﻿@model WMAS.Models.Employee
 @{
     ViewData["Title"] = $"{Model.FullName} - Details";
+    bool isAdmin = User.IsInRole("Admin");
 }
 
 <div class="container mt-4">
@@ -107,13 +108,16 @@
 
                         <dt class="col-sm-4 text-muted">Salary</dt>
                         <dd class="col-sm-8">
-                            @if (Model.Salary > 0)
+                            @if (isAdmin)
                             {
-                                @Model.Salary.ToString("C0")
-                            }
-                            else
-                            {
-                                <span class="text-muted">Not set</span>
+                                @if (Model.Salary > 0)
+                                {
+                                    @Model.Salary.ToString("C0")
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Not set</span>
+                                }
                             }
                         </dd>
                         <dt class="col-sm-4 text-muted">Joining Date</dt>
@@ -151,10 +155,37 @@
                             </span>
                         </dd>
                     </dl>
+                    @if (isAdmin)
+                    {
+                        var roles = ViewBag.Roles as List<string> ?? new();
+                        <dt class="col-sm-5 text-muted mb-1">Assigned Roles</dt>
+                        <dd class="col-sm-7">
+                            @if (roles.Any())
+                            {
+                                <div class="d-flex flex-wrap gap-1">
+                                    @foreach (var role in roles)
+                                    {
+                                        var badgeColor = role switch
+                                        {
+                                            "Admin" => "bg-danger",
+                                            "HR" => "bg-info",
+                                            "Manager" => "bg-warning text-dark",
+                                            _ => "bg-secondary"
+                                        };
+                                        <span class="badge @badgeColor">@role</span>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Employee</span>
+                            }
+                        </dd>
+                    }
                 </div>
 
                 <!-- Reset Password (only if has access) -->
-                @if (Model.HasSystemAccess)
+                @if (Model.HasSystemAccess && isAdmin)
                 {
                     <div class="col-lg-6 mt-4 mt-lg-0">
                         <div class="card border-danger">
@@ -178,26 +209,31 @@
 
                                 <button class="btn btn-danger btn-sm"
                                         onclick="openConfirmAction({
-                                                        title: 'Reset Password',
-                                                        message: 'A new temporary password will be generated and shown only once.',
-                                                        buttonText: 'Confirm Reset',
-                                                        controller: 'Employee',
-                                                        action: 'ResetPassword',
-                                                        id: @Model.EmployeeId
-                                                    })">
+                                    title: 'Reset Password',
+                                    message: 'A new temporary password will be generated and shown only once.',
+                                    buttonText: 'Confirm Reset',
+                                    controller: 'Employee',
+                                    action: 'ResetPassword',
+                                    id: @Model.EmployeeId
+                                    })">
                                     <i class="bi bi-arrow-repeat me-1"></i> Reset Password
                                 </button>
                             </div>
                         </div>
+                     
                     </div>
                 }
             </div>
-
+            
             <!-- Action Buttons -->
             <div class="mt-5 d-flex gap-3 justify-content-end">
-                <a asp-action="Edit" asp-route-id="@Model.EmployeeId" class="btn btn-primary px-4">
-                    <i class="bi bi-pencil-square me-1"></i> Edit Employee
-                </a>
+                @if (isAdmin)
+                {
+                    <a asp-action="Edit" asp-route-id="@Model.EmployeeId"
+                           class="btn btn-primary px-4">
+                        <i class="bi bi-pencil-square me-1"></i>Edit Employee
+                    </a>
+                }
                 <a asp-action="Index" class="btn btn-outline-secondary px-4">
                     Back to List
                 </a>

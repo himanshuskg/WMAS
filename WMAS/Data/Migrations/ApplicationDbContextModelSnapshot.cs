@@ -629,8 +629,8 @@ namespace WMAS.Data.Migrations
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
-                    b.Property<int?>("ActionOn")
-                        .HasColumnType("int");
+                    b.Property<DateTime?>("ActionOn")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("CreatedBy")
                         .HasColumnType("nvarchar(max)");
@@ -721,6 +721,9 @@ namespace WMAS.Data.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int>("ApprovedLeave")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("BasicPay")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
@@ -738,6 +741,15 @@ namespace WMAS.Data.Migrations
                     b.Property<int>("EmployeeId")
                         .HasColumnType("int");
 
+                    b.Property<int>("HalfDays")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsFinalized")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("LopDaysExact")
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int>("Month")
                         .HasColumnType("int");
 
@@ -745,11 +757,23 @@ namespace WMAS.Data.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int>("PresentDays")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Sundays")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalDays")
+                        .HasColumnType("int");
+
                     b.Property<string>("UpdatedBy")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime?>("UpdatedOn")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("WorkingDays")
+                        .HasColumnType("int");
 
                     b.Property<int>("Year")
                         .HasColumnType("int");

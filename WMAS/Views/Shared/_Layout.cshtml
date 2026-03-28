@@ -35,7 +35,6 @@
                                     <i class="bi bi-speedometer2 me-1"></i>Dashboard
                                 </a>
                             </li>
-
                             @if (User.IsInRole("Admin"))
                             {
                                 <li class="nav-item dropdown">
@@ -45,13 +44,41 @@
                                     </a>
                                     <ul class="dropdown-menu dropdown-menu-dark">
                                         <li>
-                                            <a class="dropdown-item" asp-controller="Employee" asp-action="Index">
+                                            <a class="dropdown-item"
+                                                   asp-controller="Employee" asp-action="Index">
                                                 <i class="bi bi-list-ul me-1"></i>All Employees
                                             </a>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item" asp-controller="Employee" asp-action="Create">
+                                            <a class="dropdown-item"
+                                                   asp-controller="Employee" asp-action="Create">
                                                 <i class="bi bi-person-plus me-1"></i>Add Employee
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider" /></li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="Department" asp-action="Index">
+                                                <i class="bi bi-building me-1"></i>Departments
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="Designation" asp-action="Index">
+                                                <i class="bi bi-award me-1"></i>Designations
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="EmployeeType" asp-action="Index">
+                                                <i class="bi bi-tags me-1"></i>Employee Types
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider" /></li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="RoleAdmin" asp-action="Index">
+                                                <i class="bi bi-person-gear me-1"></i>Role Management
                                             </a>
                                         </li>
                                     </ul>
@@ -81,32 +108,101 @@
                                         <li>
                                             <a class="dropdown-item"
                                                    asp-controller="LeaveApproval" asp-action="Index">
-                                                <i class="bi bi-hourglass-split me-1"></i>Pending Approvals
+                                                <i class="bi bi-hourglass-split me-1"></i>All Requests
                                             </a>
                                         </li>
                                     </ul>
                                 </li>
                                 <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#"
+                                           data-bs-toggle="dropdown">
                                         <i class="bi bi-cash-stack me-1"></i>Payroll
                                     </a>
                                     <ul class="dropdown-menu dropdown-menu-dark">
                                         <li>
-                                            <a class="dropdown-item" asp-controller="Salary" asp-action="Index">
+                                            <a class="dropdown-item"
+                                                   asp-controller="Salary" asp-action="Index">
                                                 <i class="bi bi-table me-1"></i>Monthly Payroll
                                             </a>
                                         </li>
                                         <li>
-                                            <a class="dropdown-item" asp-controller="Salary" asp-action="Upsert">
+                                            <a class="dropdown-item"
+                                                   asp-controller="Salary" asp-action="Upsert">
                                                 <i class="bi bi-plus-circle me-1"></i>Add Record
                                             </a>
                                         </li>
                                     </ul>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Report" asp-action="Index">
+                                    <a class="nav-link"
+                                           asp-controller="Report" asp-action="Index">
                                         <i class="bi bi-bar-chart-line me-1"></i>Reports
                                     </a>
+                                </li>
+                            }
+                            @if (User.IsInRole("HR") && !User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#"
+                                           data-bs-toggle="dropdown">
+                                        <i class="bi bi-people-gear me-1"></i>HR
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-dark">
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="Employee" asp-action="Index">
+                                                <i class="bi bi-people me-1"></i>Employees
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="Attendance" asp-action="AdminIndex">
+                                                <i class="bi bi-calendar-check me-1"></i>Attendance
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="LeaveApproval" asp-action="Index">
+                                                <i class="bi bi-clipboard2-check me-1"></i>Leave Requests
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider" /></li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="Salary" asp-action="Index">
+                                                <i class="bi bi-cash-stack me-1"></i>Payroll
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="Report" asp-action="Index">
+                                                <i class="bi bi-bar-chart-line me-1"></i>Reports
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            }
+                            @if (User.IsInRole("Manager") && !User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#"
+                                           data-bs-toggle="dropdown">
+                                        <i class="bi bi-person-badge me-1"></i>My Team
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-dark">
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="Attendance" asp-action="ManagerIndex">
+                                                <i class="bi bi-people me-1"></i>Team Attendance
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="LeaveApproval" asp-action="Index">
+                                                <i class="bi bi-clipboard2-check me-1"></i>Team Leaves
+                                            </a>
+                                        </li>
+                                    </ul>
                                 </li>
                             }
                             @if (User.IsInRole("Employee"))
@@ -136,20 +232,13 @@
                                                 <i class="bi bi-calendar-plus me-1"></i>Apply Leave
                                             </a>
                                         </li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li>
-                                            <a class="dropdown-item"
-                                                   asp-controller="LeaveApproval" asp-action="Index">
-                                                <i class="bi bi-people me-1"></i>Team Approvals
-                                            </a>
-                                        </li>
-                                        <li class="nav-item">
-                                            <a class="nav-link" asp-controller="Salary" asp-action="MySlips">
-                                                <i class="bi bi-receipt me-1"></i>My Salary
-                                            </a>
-                                        </li>
-
                                     </ul>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link"
+                                           asp-controller="Salary" asp-action="MySlips">
+                                        <i class="bi bi-receipt me-1"></i>My Salary
+                                    </a>
                                 </li>
                             }
                         }
@@ -191,9 +280,7 @@
         </div>
     </footer>
     <script>
-            setTimeout(() => {
-                document.querySelectorAll('.alert:not(.persistent-alert)').forEach(a => a.remove());
-            }, 5000);
+            setTimeout(() => { document.querySelectorAll('.alert:not(.persistent-alert)').forEach(a => a.remove()); }, 5000);
     </script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

@@ -13,43 +13,39 @@ namespace WMAS.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
 
-        public LeaveApprovalController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+        public LeaveApprovalController(ApplicationDbContext context,UserManager<IdentityUser> userManager)
         {
             _context = context;
             _userManager = userManager;
         }
 
+        [Authorize(Roles = "Admin,HR,Manager")]
         public async Task<IActionResult> Index()
         {
             var userId = _userManager.GetUserId(User);
-
-            if (User.IsInRole("Admin"))
+            if (User.IsInRole("Admin") || User.IsInRole("HR"))
             {
-                var all = await _context.Leaves
-                    .Include(l => l.Employee)
-                    .Where(l => l.Status == "Pending")
-                    .OrderByDescending(l => l.CreatedOn)
-                    .ToListAsync();
+                var all = await _context.Leaves.Include(l => l.Employee).ThenInclude(e => e!.Department)
+                                            .Where(l => l.Status == "Pending")
+                                            .OrderByDescending(l => l.CreatedOn)
+                                            .ToListAsync();
 
-                ViewBag.IsAdmin = true;
+                ViewBag.IsAdminOrHR = true;
                 return View(all);
             }
 
-            if (User.IsInRole("Employee"))
+            if (User.IsInRole("Manager"))
             {
                 var manager = await _context.Employees
                     .FirstOrDefaultAsync(e => e.UserId == userId);
 
                 if (manager == null) return Unauthorized();
 
-                var team = await _context.Leaves
-                    .Include(l => l.Employee)
-                    .Where(l => l.Status == "Pending" &&
-                                l.Employee.ReportingManagerId == manager.EmployeeId)
-                    .OrderByDescending(l => l.CreatedOn)
-                    .ToListAsync();
+                var team = await _context.Leaves.Include(l => l.Employee).ThenInclude(e => e!.Department)
+                                                .Where(l => l.Status == "Pending" && l.Employee!.ReportingManagerId == manager.EmployeeId)
+                                                .OrderByDescending(l => l.CreatedOn).ToListAsync();
 
-                ViewBag.IsAdmin = false;
+                ViewBag.IsAdminOrHR = false;
                 return View(team);
             }
 
@@ -58,11 +54,10 @@ namespace WMAS.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,HR,Manager")]
         public async Task<IActionResult> Approve(int id, string? actionComments)
         {
-            var leave = await _context.Leaves
-                .Include(l => l.Employee)
-                .FirstOrDefaultAsync(l => l.LeaveId == id && l.Status == "Pending");
+            var leave = await _context.Leaves.Include(l => l.Employee).FirstOrDefaultAsync(l => l.LeaveId == id && l.Status == "Pending");
 
             if (leave == null)
             {
@@ -72,19 +67,19 @@ namespace WMAS.Controllers
 
             var userId = _userManager.GetUserId(User);
 
-            if (User.IsInRole("Admin"))
+            if (User.IsInRole("Admin") || User.IsInRole("HR"))
             {
                 leave.Status = "Approved";
                 leave.ActionOn = DateTime.Now;
                 leave.ActionComments = actionComments;
-                // ActionById stays null — Admin is not in Employee table
             }
-            else if (User.IsInRole("Employee"))
+            else if (User.IsInRole("Manager"))
             {
                 var manager = await _context.Employees
                     .FirstOrDefaultAsync(e => e.UserId == userId);
 
-                if (manager == null || leave.Employee.ReportingManagerId != manager.EmployeeId)
+                if (manager == null ||
+                    leave.Employee!.ReportingManagerId != manager.EmployeeId)
                     return Forbid();
 
                 leave.Status = "Approved";
@@ -95,17 +90,17 @@ namespace WMAS.Controllers
             else return Forbid();
 
             await _context.SaveChangesAsync();
-            TempData["Success"] = $"Leave approved for {leave.Employee!.FullName}.";
+            TempData["Success"] =
+                $"Leave approved for {leave.Employee!.FullName}.";
             return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin,HR,Manager")]
         public async Task<IActionResult> Reject(int id, string? actionComments)
         {
-            var leave = await _context.Leaves
-                .Include(l => l.Employee)
-                .FirstOrDefaultAsync(l => l.LeaveId == id && l.Status == "Pending");
+            var leave = await _context.Leaves.Include(l => l.Employee).FirstOrDefaultAsync(l => l.LeaveId == id && l.Status == "Pending");
 
             if (leave == null)
             {
@@ -115,18 +110,19 @@ namespace WMAS.Controllers
 
             var userId = _userManager.GetUserId(User);
 
-            if (User.IsInRole("Admin"))
+            if (User.IsInRole("Admin") || User.IsInRole("HR"))
             {
                 leave.Status = "Rejected";
                 leave.ActionOn = DateTime.Now;
                 leave.ActionComments = actionComments;
             }
-            else if (User.IsInRole("Employee"))
+           
+            else if (User.IsInRole("Manager"))
             {
                 var manager = await _context.Employees
                     .FirstOrDefaultAsync(e => e.UserId == userId);
 
-                if (manager == null || leave.Employee.ReportingManagerId != manager.EmployeeId)
+                if (manager == null || leave.Employee!.ReportingManagerId != manager.EmployeeId)
                     return Forbid();
 
                 leave.Status = "Rejected";

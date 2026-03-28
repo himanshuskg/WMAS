@@ -34,6 +34,8 @@ namespace WMAS.Models.ViewModels
         [Display(Name = "Employee Type")]
         [Required(ErrorMessage = "Employee Type is required")]
         public int EmployeeTypeId { get; set; }
+        public int? ReportingManagerId { get; set; }
+
         [Required(ErrorMessage = "Gender is required")]
         public string Gender { get; set; } = null!;
         [Required(ErrorMessage = "Salary is required")]
@@ -45,6 +47,7 @@ namespace WMAS.Models.ViewModels
         public List<Department>? Departments { get; set; }
         public List<Designation>? Designations { get; set; }
         public List<EmployeeType>? EmployeeTypes { get; set; }
+        public List<Employee> Managers { get; set; } = new();
         // Validation methods:
         public static ValidationResult? ValidateHireDate(DateOnly? hireDate, ValidationContext context)
         {

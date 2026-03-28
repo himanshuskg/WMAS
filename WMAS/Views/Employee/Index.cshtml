@@ -56,9 +56,13 @@
 
     <!-- 🔹 FILTER SECTION -->
     <div class="card shadow-sm border-0 mb-2">
+
         <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center py-1">
             <span class="small fw-semibold">Employee List</span>
-            <a asp-action="Create" class="btn btn-light btn-sm">+ Add</a>
+            @if (User.IsInRole("Admin"))
+            {
+                <a asp-action="Create" class="btn btn-light btn-sm">+ Add</a>            
+            }
         </div>
 
         <div class="card-body">
@@ -165,7 +169,10 @@
                                 </td>
 
                                 <td class="text-end">
-                                    <a asp-action="Edit" asp-route-id="@e.EmployeeId" class="btn btn-outline-primary btn-sm">Edit</a>
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@e.EmployeeId" class="btn btn-outline-primary btn-sm">Edit</a>
+                                    }
                                     <a asp-action="Details" asp-route-id="@e.EmployeeId" class="btn btn-outline-secondary btn-sm">View</a>
                                 </td>
                             </tr>

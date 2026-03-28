@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = "Leave Approvals";
-    bool isAdmin = (bool)(ViewBag.IsAdmin ?? false);
+    bool isAdminOrHR = (bool)(ViewBag.IsAdminOrHR ?? false);
 }
 
 <div class="container mt-3">
@@ -10,8 +10,7 @@
     <div class="card shadow-sm border-0 mb-2">
         <div class="card-header bg-primary text-white py-1">
             <span class="small fw-semibold">
-                <i class="bi bi-clipboard2-check me-1"></i>
-                @(isAdmin ? "All Pending Leaves" : "Team Leave Requests")
+                <i class="bi bi-clipboard2-check me-1"></i>@(isAdminOrHR ? "All Pending Leaves" : "Team Leave Requests")
             </span>
         </div>
     </div>

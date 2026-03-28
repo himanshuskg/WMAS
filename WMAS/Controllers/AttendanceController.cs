@@ -32,8 +32,8 @@ namespace WMAS.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            var today = DateTime.Today;
-            var exists = await _context.Attendances.AnyAsync(a => a.EmployeeId == employee.EmployeeId && a.Date == today);
+           
+            var exists = await _context.Attendances.AnyAsync(a => a.EmployeeId == employee.EmployeeId && a.Date == DateTime.Now);
 
             if (exists)
             {
@@ -44,7 +44,7 @@ namespace WMAS.Controllers
             _context.Attendances.Add(new Attendance
             {
                 EmployeeId = employee.EmployeeId,
-                Date = today,
+                Date = DateTime.Now,
                 CheckInTime = DateTime.Now,
                 Status = "Present"
             });
@@ -68,8 +68,8 @@ namespace WMAS.Controllers
                 return RedirectToAction("Index", "Home");
             }
             var today = DateTime.Today;
-            var attendance = await _context.Attendances.FirstOrDefaultAsync(a => a.EmployeeId == employee.EmployeeId && a.Date == today);
-
+            var attendance = await _context.Attendances.Where(a =>a.EmployeeId == employee.EmployeeId && a.CheckInTime != null && a.CheckOutTime == null)
+                                                       .OrderByDescending(a => a.CheckInTime).FirstOrDefaultAsync();
             if (attendance == null || attendance.CheckInTime == null)
             {
                 TempData["Error"] = "You must check in first.";
@@ -110,8 +110,8 @@ namespace WMAS.Controllers
             return View(records);
         }
 
-        
-        [Authorize(Roles = "Admin")]
+
+        [Authorize(Roles = "Admin,HR")]
         public async Task<IActionResult> AdminIndex(int? employeeId, int? month, int? year)
         {
             int m = month ?? DateTime.Today.Month;
@@ -133,6 +133,39 @@ namespace WMAS.Controllers
             ViewBag.EmployeeId = employeeId;
 
             return View(records);
+        }
+
+        // ── MANAGER: Team attendance only ─────────────────────
+        [Authorize(Roles = "Manager")]
+        public async Task<IActionResult> ManagerIndex(DateOnly? date, int? employeeId)
+        {
+            var userId = _userManager.GetUserId(User);
+            var manager = await _context.Employees.FirstOrDefaultAsync(e => e.UserId == userId);
+
+            if (manager == null) return Unauthorized();
+
+            // Get only direct subordinates
+            var teamIds = await _context.Employees.Where(e => e.ReportingManagerId == manager.EmployeeId && e.IsActive).Select(e => e.EmployeeId).ToListAsync();
+
+            var query = _context.Attendances.Include(a => a.Employee).Where(a => teamIds.Contains(a.EmployeeId)).AsQueryable();
+
+            // Filters
+            if (date.HasValue)
+                query = query.Where(a => a.Date == Convert.ToDateTime(date.Value));
+
+            if (employeeId.HasValue)
+                query = query.Where(a => a.EmployeeId == employeeId.Value);
+
+            var records = await query.OrderByDescending(a => a.Date).ThenBy(a => a.Employee!.FullName).ToListAsync();
+
+            // Only team members in dropdown
+            ViewBag.TeamMembers = await _context.Employees.Where(e => teamIds.Contains(e.EmployeeId)).OrderBy(e => e.FullName).ToListAsync();
+
+            ViewBag.SelectedDate = date;
+            ViewBag.SelectedEmployeeId = employeeId;
+            ViewBag.ManagerName = manager.FullName;
+
+            return View("ManagerIndex", records);
         }
     }
 }

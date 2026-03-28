@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -9,60 +10,47 @@ using WMAS.Models.ViewModels;
 
 namespace WMAS.Controllers
 {
-    [Authorize(Roles = "Admin")]
     public class EmployeeController : Controller
     {
         private readonly ApplicationDbContext _context;
         private readonly ICommonService _commonService;
+        private readonly UserManager<IdentityUser> _userManager;      
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IEncryptionService _encryptionService;
 
         public EmployeeController(ApplicationDbContext context,
                                   ICommonService commonService,
-                                  IEncryptionService encryptionService)
+                                  IEncryptionService encryptionService,
+                                  UserManager<IdentityUser> userManager,
+                                  RoleManager<IdentityRole> roleManager)
         {
             _context = context;
             _commonService = commonService;
             _encryptionService = encryptionService;
+            _userManager = userManager;
+            _roleManager = roleManager;
         }
-
-        // ================= LIST =================
-        public async Task<IActionResult> Index(
-    string? searchTerm,
-    List<int>? SelectedDepartmentIds,
-    List<int>? SelectedDesignationIds,
-    List<int>? SelectedEmployeeTypeIds,
-    int pageNumber = 1,
-    int pageSize = 5)
+        [Authorize(Roles = "Admin,HR")]
+        public async Task<IActionResult> Index(string? searchTerm,List<int>? SelectedDepartmentIds,List<int>? SelectedDesignationIds,List<int>? SelectedEmployeeTypeIds,int pageNumber = 1,int pageSize = 5)
         {
-            var query = _context.Employees
-                .Include(e => e.Department)
-                .Include(e => e.Designation)
-                .Include(e => e.EmployeeType)
-                .AsQueryable();
+            var query = _context.Employees.Include(e => e.Department).Include(e => e.Designation).Include(e => e.EmployeeType).AsQueryable();
 
-            // 🔍 Search
             if (!string.IsNullOrWhiteSpace(searchTerm))
                 query = query.Where(e => e.FullName.Contains(searchTerm));
 
-            // 🏢 Department filter
             if (SelectedDepartmentIds != null && SelectedDepartmentIds.Any(id => id > 0))
                 query = query.Where(e => SelectedDepartmentIds.Contains(e.DepartmentId));
 
-            // 💼 Designation filter
             if (SelectedDesignationIds != null && SelectedDesignationIds.Any(id => id > 0))
                 query = query.Where(e => SelectedDesignationIds.Contains(e.DesignationId));
 
-            // 🧑‍💼 Employee Type filter
+           
             if (SelectedEmployeeTypeIds != null && SelectedEmployeeTypeIds.Any(id => id > 0))
                 query = query.Where(e => SelectedEmployeeTypeIds.Contains(e.EmployeeTypeId));
 
             var totalCount = await query.CountAsync();
 
-            var employees = await query
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .AsNoTracking()
-                .ToListAsync();
+            var employees = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).AsNoTracking().ToListAsync();
 
             var departments = await _context.Departments.AsNoTracking().ToListAsync();
             var designations = await _context.Designations.AsNoTracking().ToListAsync();
@@ -86,8 +74,7 @@ namespace WMAS.Controllers
 
             return View(vm);
         }
-
-        // ================= DETAILS =================
+        [Authorize(Roles = "Admin,HR")]
         public async Task<IActionResult> Details(int id)
         {
             var employee = await _context.Employees
@@ -96,20 +83,31 @@ namespace WMAS.Controllers
                 .Include(e => e.EmployeeType)
                 .FirstOrDefaultAsync(e => e.EmployeeId == id);
 
-            if (employee == null)
-                return NotFound();
+            if (employee == null) return NotFound();
 
-            // Decrypt password for admin view
-            if (!string.IsNullOrEmpty(employee.GeneratedPassword))
+            if (User.IsInRole("Admin") && !string.IsNullOrEmpty(employee.GeneratedPassword))
             {
                 employee.GeneratedPassword =
                     _encryptionService.Decrypt(employee.GeneratedPassword);
             }
+            else
+            {
+                employee.GeneratedPassword = null;
+            }
+            if (User.IsInRole("Admin") && !string.IsNullOrEmpty(employee.UserId))
+            {
+                var user = await _userManager.FindByIdAsync(employee.UserId);
+                var roles = user != null ? await _userManager.GetRolesAsync(user) : new List<string>();
 
+                ViewBag.Roles = roles.ToList();
+            }
+            else
+            {
+                ViewBag.Roles = new List<string>();
+            }
             return View(employee);
         }
-
-        // ================= CREATE (GET) =================
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create()
         {
             var vm = new EmployeeCreateUpdateViewModel();
@@ -117,7 +115,7 @@ namespace WMAS.Controllers
             return View(vm);
         }
 
-        // ================= CREATE (POST) =================
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(EmployeeCreateUpdateViewModel request)
@@ -135,7 +133,6 @@ namespace WMAS.Controllers
                 string? encryptedPassword = null;
                 string? userId = null;
 
-                //  Create user FIRST
                 if (request.HasSystemAccess)
                 {
                     var result = await _commonService.CreateUserAsync(request.Email);
@@ -159,7 +156,6 @@ namespace WMAS.Controllers
                         $"Employee created. Temporary password: {result.Password}";
                 }
 
-                //  Save employee ONCE
                 var employee = new Employee
                 {
                     FullName = request.FullName,
@@ -171,6 +167,7 @@ namespace WMAS.Controllers
                     DepartmentId = request.DepartmentId,
                     DesignationId = request.DesignationId,
                     EmployeeTypeId = request.EmployeeTypeId,
+                    ReportingManagerId = request.ReportingManagerId,
                     Salary = request.Salary,
                     HasSystemAccess = request.HasSystemAccess,
                     IsActive = request.IsActive,
@@ -194,8 +191,7 @@ namespace WMAS.Controllers
                 throw;
             }
         }
-
-        // ================= EDIT (GET) =================
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int id)
         {
             var employee = await _context.Employees.FindAsync(id);
@@ -215,6 +211,7 @@ namespace WMAS.Controllers
                 DepartmentId = employee.DepartmentId,
                 DesignationId = employee.DesignationId,
                 EmployeeTypeId = employee.EmployeeTypeId,
+                ReportingManagerId = employee.ReportingManagerId,
                 Salary = employee.Salary,
                 HasSystemAccess = employee.HasSystemAccess,
                 IsActive = employee.IsActive
@@ -224,8 +221,7 @@ namespace WMAS.Controllers
 
             return View(vm);
         }
-
-        // ================= EDIT (POST) =================
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(EmployeeCreateUpdateViewModel model)
@@ -257,6 +253,7 @@ namespace WMAS.Controllers
                 employee.DepartmentId = model.DepartmentId;
                 employee.DesignationId = model.DesignationId;
                 employee.EmployeeTypeId = model.EmployeeTypeId;
+                employee.ReportingManagerId = model.ReportingManagerId;
                 employee.Salary = model.Salary;
                 employee.IsActive = model.IsActive;
 
@@ -299,7 +296,7 @@ namespace WMAS.Controllers
                 throw;
             }
         }
-        // ================= RESET PASSWORD =================
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ResetPassword(int id)
@@ -330,8 +327,7 @@ namespace WMAS.Controllers
 
             return RedirectToAction(nameof(Details), new { id });
         }
-
-        // ================= ACTIVATE =================
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Activate(int id)
@@ -348,7 +344,7 @@ namespace WMAS.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // ================= DEACTIVATE =================
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Deactivate(int id)
@@ -365,12 +361,17 @@ namespace WMAS.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // ================= DROPDOWNS =================
+
         private async Task LoadDropdownsAsync(EmployeeCreateUpdateViewModel vm)
         {
-            vm.Departments = await _context.Departments.ToListAsync();
-            vm.Designations = await _context.Designations.ToListAsync();
+            // Managers dropdown — only employees with Manager role
+            var managerUsers = await _userManager.GetUsersInRoleAsync("Manager");
+            var managerUserIds = managerUsers.Select(u => u.Id).ToList();
+
+            vm.Departments = await _context.Departments.OrderBy(d => d.DepartmentName).ToListAsync();
+            vm.Designations = await _context.Designations.OrderBy(d => d.Title).ToListAsync();
             vm.EmployeeTypes = await _context.EmployeeTypes.ToListAsync();
+            vm.Managers = await _context.Employees.Where(e => e.UserId != null && managerUserIds.Contains(e.UserId) && e.IsActive).OrderBy(e => e.FullName).ToListAsync();
         }
     }
 }

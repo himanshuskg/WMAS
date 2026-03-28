@@ -4,6 +4,7 @@
     var departments = Model?.Departments ?? new List<Department>();
     var designations = Model?.Designations ?? new List<Designation>();
     var employeeTypes = Model?.EmployeeTypes ?? new List<EmployeeType>();
+    var managers = Model?.Managers ?? new List<Employee>();
     ViewData["Title"] = "Edit Employee";
 }
 
@@ -73,16 +74,34 @@
                         </div>
 
                         <!-- Employee Type -->
-                        <div class="mb-3">
-                            <label asp-for="EmployeeTypeId" class="form-label fw-semibold"></label>
-                            <select asp-for="EmployeeTypeId"
-                                    asp-items="@(new SelectList(employeeTypes, "Id", "Name", Model.EmployeeTypeId))"
-                                    class="form-select select2-single">
-                                <option value="">-- Select Employee Type --</option>
-                            </select>
-                            <span asp-validation-for="EmployeeTypeId" class="text-danger small"></span>
-                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="EmployeeTypeId" class="form-label fw-semibold"></label>
+                                <select asp-for="EmployeeTypeId" asp-items="@(new SelectList(employeeTypes,"Id", "Name"))" class="form-select select2-single">
+                                    <option value="">-- Select Type --</option>
+                                </select>
+                                <span asp-validation-for="EmployeeTypeId"
+                                      class="text-danger small"></span>
+                            </div>
 
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ReportingManagerId" class="form-label fw-semibold">
+                                    Reporting Manager
+                                </label>
+                                <select asp-for="ReportingManagerId" class="form-select select2-single">
+                                    <option value="">— None —</option>
+                                    @foreach (var mgr in managers)
+                                    {
+                                        <option value="@mgr.EmployeeId">
+                                            @mgr.FullName @(mgr.Department != null ? $"({mgr.Department.DepartmentName})" : "")
+                                        </option>
+                                    }
+                                </select>
+                                <div class="form-text text-muted">
+                                    Who does this employee report to?
+                                </div>
+                            </div>
+                        </div>
                         <!-- Dates -->
                         <div class="row">
                             <div class="col-md-6 mb-3">
