@@ -1,0 +1,181 @@
+﻿@model WMAS.Models.ViewModels.EmployeeCreateUpdateViewModel
+
+@{
+    var departments = Model?.Departments ?? new List<Department>();
+    var designations = Model?.Designations ?? new List<Designation>();
+    var employeeTypes = Model?.EmployeeTypes ?? new List<EmployeeType>();
+    var managers = Model?.Managers ?? new List<Employee>();
+    ViewData["Title"] = "Create Employee";
+}
+   
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <div class="card shadow border-0 rounded-4">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h4 class="mb-0">👤 Create New Employee</h4>
+                </div>
+
+                <div class="card-body p-4">
+
+                    <form asp-action="Create" method="post">
+
+                        <!-- Full Name -->
+                        <div class="mb-3">
+                            <label asp-for="FullName" class="form-label fw-semibold"></label>
+                            <input asp-for="FullName" class="form-control" />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label fw-semibold"></label>
+                            <input asp-for="Email" class="form-control" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+                        <!-- Phone -->
+                        <div class="mb-3">
+                            <label asp-for="Phone" class="form-label fw-semibold"></label>
+                            <input asp-for="Phone" class="form-control" />
+                            <span asp-validation-for="Phone" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Department -->
+                        <div class="mb-3">
+                            <label asp-for="DepartmentId" class="form-label fw-semibold"></label>
+                            <select asp-for="DepartmentId"
+                                    asp-items="@(new SelectList(departments ?? new List<Department>(), "DepartmentId", "DepartmentName"))"
+                                    class="form-select select2-single">
+                                <option value="">-- Select Department --</option>
+                            </select>
+                            <span asp-validation-for="DepartmentId" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Designation -->
+                        <div class="mb-3">
+                            <label asp-for="DesignationId" class="form-label fw-semibold"></label>
+                            <select asp-for="DesignationId"
+                                    asp-items="@(new SelectList(designations ?? new List<Designation>(), "DesignationId", "Title"))"
+                                    class="form-select select2-single">
+                                <option value="">-- Select Designation --</option>
+                            </select>
+                            <span asp-validation-for="DesignationId" class="text-danger small"></span>
+                        </div>
+                        <!-- Employee Type -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="EmployeeTypeId" class="form-label fw-semibold"></label>
+                                <select asp-for="EmployeeTypeId"
+                                        asp-items="@(new SelectList(employeeTypes,"Id", "Name"))" class="form-select select2-single">
+                                    <option value="">-- Select Type --</option>
+                                </select>
+                                <span asp-validation-for="EmployeeTypeId"
+                                      class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ReportingManagerId" class="form-label fw-semibold">
+                                    Reporting Manager
+                                </label>
+                                <select asp-for="ReportingManagerId" class="form-select select2-single">
+                                    <option value="">— None —</option>
+                                    @foreach (var mgr in managers)
+                                    {
+                                        <option value="@mgr.EmployeeId">
+                                            @mgr.FullName@(mgr.Department != null ? $"({mgr.Department.DepartmentName})" : "")
+                                        </option>
+                                    }
+                                </select>
+                                <div class="form-text text-muted">
+                                    Who does this employee report to?
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Dates -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="HireDate" class="form-label fw-semibold"></label>
+                                <input asp-for="HireDate" type="date" class="form-control" />
+                                <span asp-validation-for="HireDate" class="text-danger small"></span>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="DateOfBirth" class="form-label fw-semibold"></label>
+                                <input asp-for="DateOfBirth" type="date" class="form-control" />
+                                <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <!-- Gender -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Gender</label>
+                            <div class="d-flex gap-3">
+
+                                <div class="form-check">
+                                    <input type="radio" asp-for="Gender" value="Male" class="form-check-input" />
+                                    <label class="form-check-label">Male</label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input type="radio" asp-for="Gender" value="Female" class="form-check-input" />
+                                    <label class="form-check-label">Female</label>
+                                </div>
+
+                                <div class="form-check">
+                                    <input type="radio" asp-for="Gender" value="Other" class="form-check-input" />
+                                    <label class="form-check-label">Other</label>
+                                </div>
+
+                            </div>
+                            <span asp-validation-for="Gender" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Salary -->
+                        <div class="mb-3">
+                            <label asp-for="Salary" class="form-label fw-semibold"></label>
+                            <input asp-for="Salary" class="form-control" />
+                            <span asp-validation-for="Salary" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Switches -->
+                        <div class="form-check form-switch mb-2">
+                            <input asp-for="IsActive" class="form-check-input" />
+                            <label class="form-check-label">Active</label>
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                            <input asp-for="HasSystemAccess" class="form-check-input" />
+                            <label class="form-check-label">System Access</label>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a asp-action="Index" class="btn btn-outline-secondary">← Back</a>
+                            <button type="submit" class="btn btn-success px-4">✔ Create</button>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- SELECT2 -->
+<script>
+    $(document).ready(function () {
+        $('.select2-single').select2({
+            placeholder: "Select an option",
+            allowClear: true,
+            width: '100%'
+        });
+
+        // Fix validation
+        $('.select2-single').on('change', function () {
+            $(this).trigger('blur');
+        });
+    });
+</script>

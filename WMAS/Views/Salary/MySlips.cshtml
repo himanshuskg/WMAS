@@ -1,0 +1,206 @@
+﻿@model IEnumerable<WMAS.Models.Salary>
+@using WMAS.Models
+
+@{
+    ViewData["Title"] = "My Salary Slips";
+    var employee       = ViewBag.Employee as Employee;
+    var availableYears = ViewBag.AvailableYears as List<int> ?? new();
+    int selectedYear   = ViewBag.Year;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-0 fw-bold">
+            <i class="bi bi-receipt me-2"></i>My Salary Slips
+        </h4>
+        <small class="text-muted">
+            @(employee?.FullName ?? "")
+            @if (employee?.Department != null)
+            {
+                <span class="ms-2 badge bg-secondary">
+                    @employee.Department.DepartmentName
+                </span>
+            }
+        </small>
+    </div>
+    <span class="badge bg-secondary fs-6 px-3 py-2">Employee</span>
+</div>
+
+<!-- Year filter -->
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body py-2">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small mb-1">Year</label>
+                <select name="year" class="form-select form-select-sm">
+                    @foreach (var y in availableYears)
+                    {
+                        <option value="@y" selected="@(y == selectedYear)">
+                            @y
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary btn-sm w-100">
+                    <i class="bi bi-funnel me-1"></i>Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="text-center text-muted py-5">
+        <i class="bi bi-cash-coin fs-1"></i>
+        <p class="mt-2">
+            No salary slips for @selectedYear.
+        </p>
+        <p class="small text-muted">
+            Your HR will generate payroll each month.
+        </p>
+    </div>
+}
+else
+{
+   var latest = Model.Take(3).ToList();
+    <div class="row g-3 mb-4">
+        @foreach (var s in latest)
+        {
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <div class="text-muted small">
+                                    @(new DateTime(s.Year, s.Month, 1).ToString("MMMM yyyy"))
+                                </div>
+                                <div class="fs-3 fw-bold text-primary mt-1">
+                                    ₹@s.NetSalary.ToString("N0")
+                                </div>
+                            </div>
+                            @if (s.IsFinalized)
+                            {
+                                <span class="badge bg-success">Finalized</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-warning text-dark">Draft</span>
+                            }
+                        </div>
+                        <hr class="my-2" />
+                        <div class="row text-center small">
+                            <div class="col-4">
+                                <div class="fw-semibold text-success">
+                                    @s.PresentDays
+                                </div>
+                                <div class="text-muted">Present</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="fw-semibold text-warning">
+                                    @s.HalfDays
+                                </div>
+                                <div class="text-muted">Half Days</div>
+                            </div>
+                            <div class="col-4">
+                                <div class="fw-semibold text-danger">
+                                    @s.LopDaysExact.ToString("0.#")
+                                </div>
+                                <div class="text-muted">LOP</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent border-0 pt-0 pb-3">
+                        <a asp-action="SlipDetail" asp-route-id="@s.SalaryId"
+                           class="btn btn-sm btn-outline-primary w-100">
+                            <i class="bi bi-eye me-1"></i>View Slip
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Full history table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-transparent border-bottom">
+            <span class="fw-semibold">
+                <i class="bi bi-clock-history me-2 text-secondary"></i>
+                @selectedYear — Full History
+            </span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle mb-0">
+                <thead class="table-light small">
+                    <tr>
+                        <th>Month</th>
+                        <th class="text-center">Working Days</th>
+                        <th class="text-center">Present</th>
+                        <th class="text-center">Half Days</th>
+                        <th class="text-center">Leave</th>
+                        <th class="text-center">LOP</th>
+                        <th class="text-end">Basic Pay</th>
+                        <th class="text-end">Allowances</th>
+                        <th class="text-end">Deductions</th>
+                        <th class="text-end fw-bold">Net Salary</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-center">Slip</th>
+                    </tr>
+                </thead>
+                <tbody class="small">
+                    @foreach (var s in Model)
+                    {
+                        <tr>
+                            <td class="fw-semibold">
+                                @(new DateTime(s.Year, s.Month, 1).ToString("MMMM yyyy"))
+                            </td>
+                            <td class="text-center">@s.WorkingDays</td>
+                            <td class="text-center text-success fw-semibold">
+                                @s.PresentDays
+                            </td>
+                            <td class="text-center text-warning">
+                                @(s.HalfDays > 0 ? s.HalfDays.ToString() : "—")
+                            </td>
+                            <td class="text-center text-info">
+                                @(s.ApprovedLeave > 0 ? s.ApprovedLeave.ToString() : "—")
+                            </td>
+                            <td class="text-center @(s.LopDaysExact > 0 ? "text-danger fw-semibold" : "")">
+                                @(s.LopDaysExact > 0 ? s.LopDaysExact.ToString("0.#") : "—")
+                            </td>
+                            <td class="text-end">₹@s.BasicPay.ToString("N2")</td>
+                            <td class="text-end text-success">
+                                @(s.Allowances > 0 ? $"+₹{s.Allowances:N2}" : "—")
+                            </td>
+                            <td class="text-end text-danger">
+                                @(s.Deductions > 0 ? $"-₹{s.Deductions:N2}" : "—")
+                            </td>
+                            <td class="text-end fw-bold text-primary">
+                                ₹@s.NetSalary.ToString("N2")
+                            </td>
+                            <td class="text-center">
+                                @if (s.IsFinalized)
+                                {
+                                    <span class="badge bg-success">Finalized</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">Draft</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <a asp-action="SlipDetail" asp-route-id="@s.SalaryId" class="btn btn-sm btn-outline-secondary"
+                                   title="View Slip">
+                                    <i class="bi bi-receipt"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer bg-transparent small text-muted">
+            @Model.Count() record(s) for @selectedYear
+        </div>
+    </div>
+}

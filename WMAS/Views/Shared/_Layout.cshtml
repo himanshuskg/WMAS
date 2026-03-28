@@ -5,46 +5,288 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - WMAS</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/select2/css/select2.min.css" />
+    <link rel="stylesheet" href="~/css/bootstrap-icons.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/WMAS.styles.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
-<body>
+
+<body class="bg-light">
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-dark bg-dark border-bottom shadow-sm mb-3">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">WMAS</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
+                <a class="navbar-brand fw-bold" asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-diagram-3-fill me-1"></i>WMAS
+                </a>
+
+                <button class="navbar-toggler" type="button"
+                        data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
                     <span class="navbar-toggler-icon"></span>
                 </button>
+
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
                     <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
+
+                        @if (User.Identity!.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Home" asp-action="Index">
+                                    <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                                </a>
+                            </li>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#"
+                                           data-bs-toggle="dropdown">
+                                        <i class="bi bi-people me-1"></i>Employees
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-dark">
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="Employee" asp-action="Index">
+                                                <i class="bi bi-list-ul me-1"></i>All Employees
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="Employee" asp-action="Create">
+                                                <i class="bi bi-person-plus me-1"></i>Add Employee
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider" /></li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="Department" asp-action="Index">
+                                                <i class="bi bi-building me-1"></i>Departments
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="Designation" asp-action="Index">
+                                                <i class="bi bi-award me-1"></i>Designations
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="EmployeeType" asp-action="Index">
+                                                <i class="bi bi-tags me-1"></i>Employee Types
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider" /></li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="RoleAdmin" asp-action="Index">
+                                                <i class="bi bi-person-gear me-1"></i>Role Management
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#"
+                                           data-bs-toggle="dropdown">
+                                        <i class="bi bi-calendar-week me-1"></i>Attendance
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-dark">
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="Attendance" asp-action="AdminIndex">
+                                                <i class="bi bi-table me-1"></i>View Records
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#"
+                                           data-bs-toggle="dropdown">
+                                        <i class="bi bi-clipboard2-check me-1"></i>Leaves
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-dark">
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="LeaveApproval" asp-action="Index">
+                                                <i class="bi bi-hourglass-split me-1"></i>All Requests
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#"
+                                           data-bs-toggle="dropdown">
+                                        <i class="bi bi-cash-stack me-1"></i>Payroll
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-dark">
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="Salary" asp-action="Index">
+                                                <i class="bi bi-table me-1"></i>Monthly Payroll
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="Salary" asp-action="Upsert">
+                                                <i class="bi bi-plus-circle me-1"></i>Add Record
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link"
+                                           asp-controller="Report" asp-action="Index">
+                                        <i class="bi bi-bar-chart-line me-1"></i>Reports
+                                    </a>
+                                </li>
+                            }
+                            @if (User.IsInRole("HR") && !User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#"
+                                           data-bs-toggle="dropdown">
+                                        <i class="bi bi-people-gear me-1"></i>HR
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-dark">
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="Employee" asp-action="Index">
+                                                <i class="bi bi-people me-1"></i>Employees
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="Attendance" asp-action="AdminIndex">
+                                                <i class="bi bi-calendar-check me-1"></i>Attendance
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="LeaveApproval" asp-action="Index">
+                                                <i class="bi bi-clipboard2-check me-1"></i>Leave Requests
+                                            </a>
+                                        </li>
+                                        <li><hr class="dropdown-divider" /></li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="Salary" asp-action="Index">
+                                                <i class="bi bi-cash-stack me-1"></i>Payroll
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="Report" asp-action="Index">
+                                                <i class="bi bi-bar-chart-line me-1"></i>Reports
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            }
+                            @if (User.IsInRole("Manager") && !User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#"
+                                           data-bs-toggle="dropdown">
+                                        <i class="bi bi-person-badge me-1"></i>My Team
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-dark">
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="Attendance" asp-action="ManagerIndex">
+                                                <i class="bi bi-people me-1"></i>Team Attendance
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="LeaveApproval" asp-action="Index">
+                                                <i class="bi bi-clipboard2-check me-1"></i>Team Leaves
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            }
+                            @if (User.IsInRole("Employee"))
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link"
+                                           asp-controller="Attendance" asp-action="MyAttendance">
+                                        <i class="bi bi-person-check me-1"></i>Attendance
+                                    </a>
+                                </li>
+
+                                <li class="nav-item dropdown">
+                                    <a class="nav-link dropdown-toggle" href="#"
+                                           data-bs-toggle="dropdown">
+                                        <i class="bi bi-calendar-minus me-1"></i>Leaves
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-dark">
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="Leave" asp-action="Index">
+                                                <i class="bi bi-list-check me-1"></i>My Leaves
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item"
+                                                   asp-controller="Leave" asp-action="Apply">
+                                                <i class="bi bi-calendar-plus me-1"></i>Apply Leave
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link"
+                                           asp-controller="Salary" asp-action="MySlips">
+                                        <i class="bi bi-receipt me-1"></i>My Salary
+                                    </a>
+                                </li>
+                            }
+                        }
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>
             </div>
         </nav>
     </header>
+
     <div class="container">
-        <main role="main" class="pb-3">
+        <main role="main" class="pb-4">
+
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show shadow-sm">
+                    <i class="bi bi-check-circle me-2"></i>@TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show shadow-sm">
+                    <i class="bi bi-exclamation-triangle me-2"></i>@TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
+    <footer class="border-top footer text-muted mt-4 py-3">
         <div class="container">
-            &copy; 2026 - WMAS - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            <small>
+                &copy; 2026 - WMAS &mdash;
+                <a asp-controller="Home" asp-action="Privacy">Privacy</a>
+            </small>
         </div>
     </footer>
+    <script>
+            setTimeout(() => { document.querySelectorAll('.alert:not(.persistent-alert)').forEach(a => a.remove()); }, 5000);
+    </script>
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/lib/select2/js/select2.min.js"></script>
+    <script src="~/js/site.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
+<partial name="_ConfirmActionModal" />
 </html>

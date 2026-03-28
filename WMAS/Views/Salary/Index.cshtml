@@ -1,0 +1,270 @@
+﻿@model IEnumerable<WMAS.Models.Salary>
+@using WMAS.Models
+
+@{
+    ViewData["Title"] = "Monthly Payroll";
+    var employees = ViewBag.Employees as List<Employee> ?? new();
+    int month = ViewBag.Month;
+    int year = ViewBag.Year;
+    int totalDays = ViewBag.TotalDays;
+    int sundays = ViewBag.Sundays;
+    int workingDays = ViewBag.WorkingDays;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0 fw-bold">
+        <i class="bi bi-cash-stack me-2"></i>Monthly Payroll
+    </h4>
+    @if (User.IsInRole("Admin") || User.IsInRole("HR"))
+    {
+        <a asp-action="Upsert" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-plus-circle me-1"></i>Add Manual
+        </a>
+    }
+</div>
+
+<!-- Month selector + Generate -->
+<div class="card border-0 shadow-sm mb-3">
+    <div class="card-body py-2">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small mb-1">Month</label>
+                <select name="month" class="form-select form-select-sm">
+                    @for (int m = 1; m <= 12; m++)
+                    {
+                        <option value="@m" selected="@(m == month)">
+                            @(new DateTime(year, m, 1).ToString("MMMM"))
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small mb-1">Year</label>
+                <select name="year" class="form-select form-select-sm">
+                    @for (int y = DateTime.Today.Year; y >= DateTime.Today.Year - 3; y--)
+                    {
+                        <option value="@y" selected="@(y == year)">@y</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small mb-1">Employee</label>
+                <select name="employeeId" class="form-select form-select-sm">
+                    <option value="">— All —</option>
+                    @foreach (var emp in employees)
+                    {
+                        <option value="@emp.EmployeeId" selected="@(ViewBag.EmployeeId == emp.EmployeeId)">
+                            @emp.FullName
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary btn-sm w-100">
+                    <i class="bi bi-funnel me-1"></i>Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Month info bar -->
+<div class="border rounded bg-light shadow-sm py-2 mb-3">
+    <div class="row text-center small">
+        <div class="col-4 col-md-3 border-end">
+            <div class="fw-bold text-primary fs-5">@totalDays</div>
+            <div class="text-muted">Calendar Days</div>
+        </div>
+        <div class="col-4 col-md-3 border-end">
+            <div class="fw-bold text-success fs-5">@sundays</div>
+            <div class="text-muted">Sundays (Paid Off)</div>
+        </div>
+        <div class="col-4 col-md-3 border-end">
+            <div class="fw-bold text-warning fs-5">@workingDays</div>
+            <div class="text-muted">Working Days (Mon–Sat)</div>
+        </div>
+        <div class="col-12 col-md-3 mt-2 mt-md-0">
+            <!-- Generate bulk -->
+            <form asp-action="GenerateBulk" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="month" value="@month" />
+                <input type="hidden" name="year" value="@year" />
+                <button type="submit" class="btn btn-sm btn-success w-100" onclick="return confirm('Auto-calculate payroll for @(new DateTime(year, month, 1).ToString("MMMM yyyy"))?\nFinalized records will be skipped.')">
+                    <i class="bi bi-calculator me-1"></i>Generate All
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="text-center text-muted py-5">
+        <i class="bi bi-cash-coin fs-1"></i>
+        <p class="mt-2">
+            No salary records for
+            @(new DateTime(year, month, 1).ToString("MMMM yyyy")).
+        </p>
+        <p class="small">Click <strong>Generate All</strong> to auto-calculate.</p>
+    </div>
+}
+else
+{
+    <!-- Summary totals -->
+    <div class="row g-3 mb-3">
+        <div class="col-sm-4">
+            <div class="card border-0 shadow-sm text-center py-2">
+                <div class="fw-bold text-primary fs-5">
+                    ₹@((ViewBag.TotalBasic as decimal? ?? 0).ToString("N0"))
+                </div>
+                <div class="text-muted small">Total Basic Pay</div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="card border-0 shadow-sm text-center py-2">
+                <div class="fw-bold text-danger fs-5">
+                    ₹@((ViewBag.TotalDeduct as decimal? ?? 0).ToString("N0"))
+                </div>
+                <div class="text-muted small">Total Deductions (LOP)</div>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="card border-0 shadow-sm text-center py-2">
+                <div class="fw-bold text-success fs-5">
+                    ₹@((ViewBag.TotalNet as decimal? ?? 0).ToString("N0"))
+                </div>
+                <div class="text-muted small">Total Net Payable</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Records table -->
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle mb-0">
+                <thead class="table-primary small">
+                    <tr>
+                        <th>Employee</th>
+                        <th class="text-center">Working Days</th>
+                        <th class="text-center">Present</th>
+                        <th class="text-center">Half Days</th>
+                        <th class="text-center">Leave</th>
+                        <th class="text-center">LOP Days</th>
+                        <th class="text-end">Basic Pay</th>
+                        <th class="text-end">Allowances</th>
+                        <th class="text-end">Deductions</th>
+                        <th class="text-end">Net Salary</th>
+                        <th class="text-center">Status</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="small">
+                    @foreach (var s in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">
+                                    @s.Employee?.FullName
+                                </div>
+                                <div class="text-muted" style="font-size:11px">
+                                    @s.Employee?.Department?.DepartmentName
+                                </div>
+                            </td>
+                            <td class="text-center">@s.WorkingDays</td>
+                            <td class="text-center text-success fw-semibold">
+                                @s.PresentDays
+                            </td>
+                            <td class="text-center text-warning">
+                                @(s.HalfDays > 0
+                                    ? $"{s.HalfDays} (½ each)"
+                                    : "—")
+                            </td>
+                            <td class="text-center text-info">
+                                @(s.ApprovedLeave > 0 ? s.ApprovedLeave : "—")
+                            </td>
+                            <td class="text-center @(s.LopDaysExact > 0 ? "text-danger fw-semibold" : "")">
+                                @(s.LopDaysExact > 0 ? s.LopDaysExact.ToString("0.#") : "—")
+                            </td>
+                            <td class="text-end">
+                                ₹@s.BasicPay.ToString("N2")
+                            </td>
+                            <td class="text-end text-success">
+                                @(s.Allowances > 0
+                                    ? $"+₹{s.Allowances:N2}"
+                                    : "—")
+                            </td>
+                            <td class="text-end text-danger">
+                                @(s.Deductions > 0
+                                    ? $"-₹{s.Deductions:N2}"
+                                    : "—")
+                            </td>
+                            <td class="text-end fw-bold text-primary">
+                                ₹@s.NetSalary.ToString("N2")
+                            </td>
+                            <td class="text-center">
+                                @if (s.IsFinalized)
+                                {
+                                    <span class="badge bg-success">Finalized</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning text-dark">Draft</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <div class="d-flex gap-1 justify-content-center">
+
+                                    <!-- Slip detail -->
+                                    <a asp-action="SlipDetail" asp-route-id="@s.SalaryId" class="btn btn-outline-secondary btn-sm" title="View Slip">
+                                        <i class="bi bi-receipt"></i>
+                                    </a>
+
+                                    @if (!s.IsFinalized)
+                                    {
+                                        <!-- Edit -->
+                                        <a asp-action="Upsert" asp-route-id="@s.SalaryId" class="btn btn-outline-primary btn-sm" title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+
+                                        <!-- Finalize -->
+                                        <form asp-action="Finalize" method="post" class="d-inline" onsubmit="return confirm('Finalize salary for @s.Employee?.FullName?\nThis will lock the record.')">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@s.SalaryId" />
+                                            <button type="submit" class="btn btn-success btn-sm" title="Finalize">
+                                                <i class="bi bi-lock"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                    else if (User.IsInRole("Admin"))
+                                    {
+                                        <!-- Admin override on finalized -->
+                                        <a asp-action="Upsert" asp-route-id="@s.SalaryId" class="btn btn-outline-warning btn-sm" title="Admin Override">
+                                            <i class="bi bi-pencil-square"></i>
+                                        </a>
+                                    }
+
+                                    <!-- Delete (Admin only) -->
+                                    @if (User.IsInRole("Admin"))
+                                    { 
+                                        <form asp-action="Delete" method="post" class="d-inline" onsubmit="return confirm('Delete salary record for @s.Employee?.FullName?')">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@s.SalaryId" />
+                                            <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer bg-transparent small text-muted">
+            @Model.Count() employee(s) |
+            @Model.Count(s => s.IsFinalized) finalized |
+            @Model.Count(s => !s.IsFinalized) draft
+        </div>
+    </div>
+}

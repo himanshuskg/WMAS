@@ -1,0 +1,66 @@
+﻿@{
+    ViewData["Title"] = "Welcome";
+}
+
+<div class="min-vh-75 d-flex align-items-center justify-content-center py-5">
+    <div class="text-center" style="max-width: 600px;">
+
+        <!-- Logo / Icon -->
+        <div class="mb-4">
+            <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex
+                align-items-center justify-content-center"
+                 style="width:100px; height:100px;">
+                <i class="bi bi-diagram-3-fill display-4 text-primary"></i>
+            </div>
+        </div>
+
+        <!-- Title -->
+        <h1 class="fw-bold display-6 mb-1">WMAS</h1>
+        <h5 class="text-muted fw-normal mb-3">
+            Workforce Management Application System
+        </h5>
+
+        <hr class="my-4" />
+
+        <!-- Feature highlights -->
+        <div class="row g-3 mb-4 text-start">
+            <div class="col-sm-4">
+                <div class="card border-0 bg-primary bg-opacity-10 h-100 p-3 rounded-3">
+                    <i class="bi bi-people-fill text-primary fs-4 mb-2"></i>
+                    <div class="small fw-semibold">Employee Management</div>
+                    <div class="text-muted" style="font-size:11px">
+                        Centralized employee records
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="card border-0 bg-success bg-opacity-10 h-100 p-3 rounded-3">
+                    <i class="bi bi-calendar-check text-success fs-4 mb-2"></i>
+                    <div class="small fw-semibold">Attendance Tracking</div>
+                    <div class="text-muted" style="font-size:11px">
+                        Daily check-in & check-out
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="card border-0 bg-warning bg-opacity-10 h-100 p-3 rounded-3">
+                    <i class="bi bi-cash-stack text-warning fs-4 mb-2"></i>
+                    <div class="small fw-semibold">Payroll & Leaves</div>
+                    <div class="text-muted" style="font-size:11px">
+                        Automated payroll & leave flow
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login CTA -->
+        <p class="text-muted small mb-3">
+            Please log in to access your dashboard.
+        </p>
+        <a asp-area="Identity" asp-page="/Account/Login"
+               class="btn btn-primary btn-lg px-5">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Login to WMAS
+        </a>
+
+    </div>
+</div>

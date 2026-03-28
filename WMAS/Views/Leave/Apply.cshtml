@@ -1,0 +1,90 @@
+﻿@model WMAS.Models.Leave
+
+@{
+    ViewData["Title"] = "Apply for Leave";
+}
+
+<div class="container mt-3">
+    <div class="row justify-content-center">
+        <div class="col-md-7">
+
+            <div class="card shadow border-0 rounded-4">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h5 class="mb-0"><i class="bi bi-calendar-plus me-2"></i>Apply for Leave</h5>
+                </div>
+                <div class="card-body p-4">
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger small">
+                            <ul class="mb-0">
+                                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                {
+                                    <li>@error.ErrorMessage</li>
+                                }
+                            </ul>
+                        </div>
+                    }
+
+                    <form asp-action="Apply" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            <label asp-for="LeaveType" class="form-label fw-semibold">Leave Type</label>
+                            <select asp-for="LeaveType" class="form-select select2-single">
+                                <option value="Casual">Casual Leave</option>
+                                <option value="Sick">Sick Leave</option>
+                                <option value="Earned">Earned Leave</option>
+                                <option value="Unpaid">Unpaid Leave</option>
+                            </select>
+                            <span asp-validation-for="LeaveType" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="FromDate" class="form-label fw-semibold">From Date</label>
+                                <input asp-for="FromDate" type="date" class="form-control"
+                                       min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                                <span asp-validation-for="FromDate" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ToDate" class="form-label fw-semibold">To Date</label>
+                                <input asp-for="ToDate" type="date" class="form-control"
+                                       min="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                                <span asp-validation-for="ToDate" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Reason" class="form-label fw-semibold">
+                                Reason <span class="text-muted fw-normal">(optional)</span>
+                            </label>
+                            <textarea asp-for="Reason" class="form-control" rows="3"
+                                      placeholder="Brief reason..."></textarea>
+                            <span asp-validation-for="Reason" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a asp-action="Index" class="btn btn-outline-secondary">← Back</a>
+                            <button type="submit" class="btn btn-success px-4">
+                                <i class="bi bi-send me-1"></i> Submit
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        $(document).ready(function () {
+            $('.select2-single').select2({ placeholder: "Select", allowClear: true, width: '100%' });
+        });
+    </script>
+}

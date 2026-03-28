@@ -1,8 +1,117 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    var attendance = ViewBag.Attendance as WMAS.Models.Attendance;
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container mt-4">
+
+    <h2>Welcome</h2>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    <div class="card mt-3">
+        <div class="card-body">
+
+            <h5>Today</h5>
+            <p>@DateTime.Today.ToLongDateString()</p>
+
+            @if (attendance == null)
+            {
+                <form asp-controller="Attendance" asp-action="CheckIn" method="post">
+                    <button class="btn btn-success">Check In</button>
+                </form>
+            }
+            else
+            {
+                <p>
+                    <strong>Checked in:</strong>
+                    @attendance.CheckInTime?.ToShortTimeString()
+                </p>
+
+                @if (attendance.CheckOutTime == null)
+                {
+                    var elapsed = attendance.CheckInTime.HasValue
+                    ? (DateTime.Now - attendance.CheckInTime.Value)
+                    : TimeSpan.Zero;
+
+                    <p>
+                        <strong>Elapsed time:</strong>
+                        @elapsed.ToString(@"hh\:mm")
+                    </p>
+
+                    <form asp-controller="Attendance" asp-action="CheckOut" method="post">
+                        <button class="btn btn-warning">Check Out</button>
+                    </form>
+                }
+                else
+                {
+                    var total = attendance.CheckOutTime.HasValue && attendance.CheckInTime.HasValue
+                    ? (attendance.CheckOutTime.Value - attendance.CheckInTime.Value)
+                    : TimeSpan.Zero;
+
+                    <p>
+                        <strong>Checked out:</strong>
+                        @attendance.CheckOutTime?.ToShortTimeString()
+                    </p>
+
+                    <p>
+                        <strong>Total time:</strong>
+                        @total.ToString(@"hh\:mm")
+                    </p>
+                }
+            }
+        </div>
+    </div>
 </div>
+@if (User.IsInRole("Employee"))
+{
+    <div class="card mt-4">
+        <div class="card-body">
+
+            <h5>My Notes</h5>
+
+            <form asp-action="AddNote" method="post" class="mb-3">
+                <textarea name="content"
+                      class="form-control"
+                      rows="2"
+                      placeholder="Write something to remember..."
+                      maxlength="500"></textarea>
+
+                <button class="btn btn-primary mt-2">Add Note</button>
+            </form>
+
+            @{
+                var notes = ViewBag.Notes as List<WMAS.Models.Note>;
+            }
+
+            @if (notes != null && notes.Any())
+            {
+                <ul class="list-group">
+                    @foreach (var note in notes)
+                    {
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span>@note.Content</span>
+                            <a asp-action="DeleteNote"
+                               asp-route-id="@note.NoteId"
+                               class="text-danger">
+                                Delete
+                            </a>
+                        </li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <p class="text-muted">No notes yet.</p>
+            }
+        </div>
+    </div>
+}
+

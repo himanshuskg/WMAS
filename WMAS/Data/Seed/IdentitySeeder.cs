@@ -9,7 +9,7 @@ namespace WMAS.Data.Seed
             var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
             var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
 
-            string[] roles = { "Admin", "Employee" };
+            string[] roles = { "Admin", "Employee", "HR", "Manager" };
 
             foreach (var role in roles)
             {

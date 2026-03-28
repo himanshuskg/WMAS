@@ -1,0 +1,77 @@
+﻿@page
+@model LoginModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="container min-vh-100 d-flex align-items-center justify-content-center">
+
+    <div class="card shadow-sm" style="max-width: 420px; width:100%;">
+        <div class="card-body p-4">
+
+            <!-- WMAS Branding -->
+            <div class="text-center mb-4">
+                <h2 class="fw-bold mb-1">WMAS</h2>
+                <p class="text-muted small">
+                    Workforce Management & Attendance System
+                </p>
+            </div>
+
+            <!-- Validation -->
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <form method="post">
+
+                <div class="mb-3">
+                    <label asp-for="Input.Email" class="form-label"></label>
+                    <input asp-for="Input.Email" class="form-control" />
+                    <span asp-validation-for="Input.Email" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Input.Password" class="form-label"></label>
+                    <input asp-for="Input.Password" class="form-control" />
+                    <span asp-validation-for="Input.Password" class="text-danger"></span>
+                </div>
+
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        Login
+                    </button>
+                </div>
+
+            </form>
+
+            <!-- Forgot Password (Admin-controlled) -->
+            <div class="text-center mt-3">
+                <a asp-page="./ForgotPassword" class="small text-decoration-none">
+                    Forgot password?
+                </a>
+            </div>
+
+            <hr class="my-4" />
+
+            <p class="text-muted small text-center mb-0">
+                Access is restricted to authorized personnel only.
+            </p>
+
+        </div>
+    </div>
+</div>
+
+<style>
+body {
+    background-color: #f5f7fb;
+}
+
+.card {
+    border-radius: 12px;
+}
+
+.btn-primary {
+    border-radius: 8px;
+}
+</style>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

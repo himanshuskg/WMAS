@@ -1,0 +1,101 @@
+﻿@model IEnumerable<WMAS.Models.Leave>
+
+@{
+    ViewData["Title"] = "Leave Approvals";
+    bool isAdminOrHR = (bool)(ViewBag.IsAdminOrHR ?? false);
+}
+
+<div class="container mt-3">
+
+    <div class="card shadow-sm border-0 mb-2">
+        <div class="card-header bg-primary text-white py-1">
+            <span class="small fw-semibold">
+                <i class="bi bi-clipboard2-check me-1"></i>@(isAdminOrHR ? "All Pending Leaves" : "Team Leave Requests")
+            </span>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center text-muted py-5">
+            <i class="bi bi-check2-all fs-1 text-success"></i>
+            <p class="mt-2 small">No pending requests. All caught up!</p>
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm border-0">
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead class="table-primary small">
+                        <tr>
+                            <th>Employee</th>
+                            <th>Type</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Days</th>
+                            <th>Reason</th>
+                            <th>Applied On</th>
+                            <th style="min-width:220px">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="small">
+                        @foreach (var leave in Model)
+                        {
+                            var days = (leave.ToDate - leave.FromDate).Days + 1;
+                            <tr>
+                                <td>
+                                    <div class="fw-semibold">@leave.Employee?.FullName</div>
+                                    <div class="text-muted" style="font-size:11px">@leave.Employee?.Email</div>
+                                </td>
+                                <td><span class="badge bg-secondary">@leave.LeaveType</span></td>
+                                <td>@leave.FromDate.ToString("dd MMM yyyy")</td>
+                                <td>@leave.ToDate.ToString("dd MMM yyyy")</td>
+                                <td>@days</td>
+                                <td class="text-muted">@(leave.Reason ?? "—")</td>
+                                <td class="text-muted">@leave.CreatedOn.ToString("dd MMM yyyy")</td>
+                                <td>
+                                    <div class="d-flex gap-1 flex-wrap">
+
+                                        <!-- Quick Approve (no comment needed) -->
+                                        <form asp-action="Approve" method="post" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@leave.LeaveId" />
+                                            <button type="submit" class="btn btn-success btn-sm">
+                                                <i class="bi bi-check-lg"></i> Approve
+                                            </button>
+                                        </form>
+
+                                        <!-- Reject toggle -->
+                                        <button class="btn btn-danger btn-sm" type="button"
+                                                data-bs-toggle="collapse"
+                                                data-bs-target="#reject-@leave.LeaveId"
+                                                aria-expanded="false">
+                                            <i class="bi bi-x-lg"></i> Reject
+                                        </button>
+                                    </div>
+
+                                    <!-- Reject with comment -->
+                                    <div class="collapse mt-2" id="reject-@leave.LeaveId">
+                                        <form asp-action="Reject" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@leave.LeaveId" />
+                                            <div class="input-group input-group-sm">
+                                                <input type="text" name="actionComments"
+                                                       class="form-control form-control-sm"
+                                                       placeholder="Comments (optional)" />
+                                                <button type="submit" class="btn btn-danger btn-sm">
+                                                    Confirm
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

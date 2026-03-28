@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
 using WMAS.Data;
 using WMAS.Models;
 
@@ -63,16 +64,52 @@ namespace WMAS.Controllers
 
             return View(department);
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Activate(int id)
+        {
+            var dept = await _context.Departments.FindAsync(id);
+            if (dept == null) return NotFound();
+
+            dept.IsActive = true;
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Department activated successfully.";
+            return RedirectToAction(nameof(Index));
+        }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Deactivate(int id)
+        {
+            var dept = await _context.Departments.FindAsync(id);
+            if (dept == null) return NotFound();
+
+            dept.IsActive = false;
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Department deactivated successfully.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            var department = await _context.Departments.FindAsync(id);
-            if (department != null)
+            var dept = await _context.Departments.FindAsync(id);
+            if (dept == null) return NotFound();
+
+            var inUse = await _context.Employees.AnyAsync(e => e.DepartmentId == id);
+            if (inUse)
             {
-                _context.Departments.Remove(department);
-                await _context.SaveChangesAsync();
+                TempData["Error"] = "Department is assigned to employees and cannot be deleted. You may deactivate it instead.";
+                return RedirectToAction(nameof(Details), new { id });
             }
+
+            _context.Departments.Remove(dept);
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "Department deleted.";
             return RedirectToAction(nameof(Index));
         }
 
