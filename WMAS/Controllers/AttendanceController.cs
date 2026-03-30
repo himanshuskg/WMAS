@@ -32,8 +32,8 @@ namespace WMAS.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-           
-            var exists = await _context.Attendances.AnyAsync(a => a.EmployeeId == employee.EmployeeId && a.Date == DateTime.Now);
+            var today = DateTime.Today;
+            var exists = await _context.Attendances.AnyAsync(a => a.EmployeeId == employee.EmployeeId && a.Date == today);
 
             if (exists)
             {
@@ -44,7 +44,7 @@ namespace WMAS.Controllers
             _context.Attendances.Add(new Attendance
             {
                 EmployeeId = employee.EmployeeId,
-                Date = DateTime.Now,
+                Date = today, 
                 CheckInTime = DateTime.Now,
                 Status = "Present"
             });
@@ -55,22 +55,25 @@ namespace WMAS.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Employee")]
+        [Authorize(Roles = "Employee,HR,Manager")]
         public async Task<IActionResult> CheckOut()
         {
             var userId = _userManager.GetUserId(User);
             var employee = await _context.Employees.FirstOrDefaultAsync(e => e.UserId == userId);
 
             if (employee == null) return Unauthorized();
+
             if (!employee.IsActive)
             {
                 TempData["Error"] = "Your account is inactive.";
                 return RedirectToAction("Index", "Home");
             }
+
             var today = DateTime.Today;
-            var attendance = await _context.Attendances.Where(a =>a.EmployeeId == employee.EmployeeId && a.CheckInTime != null && a.CheckOutTime == null)
-                                                       .OrderByDescending(a => a.CheckInTime).FirstOrDefaultAsync();
-            if (attendance == null || attendance.CheckInTime == null)
+
+            var attendance = await _context.Attendances.FirstOrDefaultAsync(a => a.EmployeeId == employee.EmployeeId && a.Date == today);
+
+            if (attendance == null)
             {
                 TempData["Error"] = "You must check in first.";
                 return RedirectToAction("Index", "Home");
@@ -88,7 +91,7 @@ namespace WMAS.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        [Authorize(Roles = "Employee")]
+        [Authorize(Roles = "Employee,HR,Manager")]
         public async Task<IActionResult> MyAttendance(int? month, int? year)
         {
             var userId = _userManager.GetUserId(User);
@@ -98,7 +101,10 @@ namespace WMAS.Controllers
             int m = month ?? DateTime.Today.Month;
             int y = year ?? DateTime.Today.Year;
 
-            var records = await _context.Attendances.Where(a => a.EmployeeId == employee.EmployeeId && a.Date.Month == m && a.Date.Year == y)
+            var startDate = new DateTime(y, m, 1);
+            var endDate = startDate.AddMonths(1);
+
+            var records = await _context.Attendances.Where(a => a.EmployeeId == employee.EmployeeId && a.Date >= startDate && a.Date < endDate)
                                                     .OrderByDescending(a => a.Date).ToListAsync();
 
             ViewBag.Month = m;
@@ -117,8 +123,10 @@ namespace WMAS.Controllers
             int m = month ?? DateTime.Today.Month;
             int y = year ?? DateTime.Today.Year;
 
-            var query = _context.Attendances.Include(a => a.Employee).Where(a => a.Date.Month == m && a.Date.Year == y);
+            var startDate = new DateTime(y, m, 1);
+            var endDate = startDate.AddMonths(1);
 
+            var query = _context.Attendances.Include(a => a.Employee).Where(a => a.Date >= startDate && a.Date < endDate);
             if (employeeId.HasValue)
                 query = query.Where(a => a.EmployeeId == employeeId.Value);
 
@@ -149,10 +157,11 @@ namespace WMAS.Controllers
 
             var query = _context.Attendances.Include(a => a.Employee).Where(a => teamIds.Contains(a.EmployeeId)).AsQueryable();
 
-            // Filters
             if (date.HasValue)
-                query = query.Where(a => a.Date == Convert.ToDateTime(date.Value));
-
+            {
+                var selectedDate = date.Value.ToDateTime(TimeOnly.MinValue);
+                query = query.Where(a => a.Date == selectedDate);
+            }
             if (employeeId.HasValue)
                 query = query.Where(a => a.EmployeeId == employeeId.Value);
 

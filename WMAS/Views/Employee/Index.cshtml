@@ -332,12 +332,22 @@
             });
         });
 
-        // Clear filters
-        function clearFilters() {
+                function clearFilters() {
+            // Clear text input
             $('#SearchTerm').val('');
+
+            // Clear Select2 fields
             const selectors = '#departmentsMultiselect, #employeeTypesMultiselect, #designationMultiselect';
-            $('#filterForm')[0].reset();
             $(selectors).val(null).trigger('change');
+
+            // Reset pagination (important!)
+            $('<input>').attr({
+                type: 'hidden',
+                name: 'pageNumber',
+                value: 1
+            }).appendTo('#filterForm');
+
+            // Submit clean form
             $('#filterForm').submit();
         }
     </script>

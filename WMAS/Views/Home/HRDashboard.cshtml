@@ -1,7 +1,24 @@
-﻿@{
+﻿@using WMAS.Models
+@{
     ViewData["Title"] = "HR Dashboard";
 }
+@{
+    var todayAtt = ViewBag.TodayAtt as Attendance;
 
+    string statusText = "Not Checked In";
+    string statusClass = "bg-secondary";
+
+    if (todayAtt != null && todayAtt.CheckOutTime == null)
+    {
+        statusText = "Logged In";
+        statusClass = "bg-success";
+    }
+    else if (todayAtt != null && todayAtt.CheckOutTime != null)
+    {
+        statusText = "Logged Out";
+        statusClass = "bg-primary";
+    }
+}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h4 class="mb-0 fw-bold">
@@ -11,9 +28,71 @@
             @DateTime.Today.ToString("dddd, dd MMMM yyyy")
         </small>
     </div>
-    <span class="badge bg-info fs-6 px-3 py-2">HR</span>
+    <div class="d-flex gap-2">
+        <span class="badge bg-info fs-6 px-3 py-2">HR</span>
+        <span class="badge @statusClass fs-6 px-3 py-2">@statusText</span>
+    </div>
 </div>
+<div class="card border-0 shadow-sm mb-4">
+    <div class="card-body d-flex justify-content-between align-items-center">
 
+        <div>
+            <h6 class="fw-semibold mb-1">
+                <i class="bi bi-clock me-2 text-primary"></i>Your Attendance
+            </h6>
+
+            @if (todayAtt == null)
+            {
+                <span class="text-muted">Not checked in today</span>
+            }
+            else if (todayAtt.CheckOutTime == null)
+            {
+                <span class="text-success">
+                    Checked in at @todayAtt.CheckInTime?.ToString("hh:mm tt")
+                </span>
+            }
+            else
+            {
+                var duration = (todayAtt.CheckOutTime ?? DateTime.Now) - (todayAtt.CheckInTime ?? DateTime.Now);
+
+                <span class="text-primary">
+                    Completed • @((int)duration.TotalHours)h @duration.Minutes m
+                </span>
+            }
+        </div>
+
+        <div>
+            @if (todayAtt == null)
+            {
+                <small class="text-muted d-block mt-1">
+                    Click "Check In" to start your day
+                </small>
+                <form asp-controller="Attendance" asp-action="CheckIn" method="post">
+                    @Html.AntiForgeryToken()
+                    <button class="btn btn-success">
+                        <i class="bi bi-box-arrow-in-right me-1"></i>Check In
+                    </button>
+                </form>
+            }
+            else if (todayAtt.CheckOutTime == null)
+            {
+                <form asp-controller="Attendance" asp-action="CheckOut" method="post">
+                    @Html.AntiForgeryToken()
+                    <button class="btn btn-danger">
+                        <i class="bi bi-box-arrow-right me-1"></i>Check Out
+                    </button>
+                </form>
+            }
+            else
+            {
+                <span class="badge bg-success px-3 py-2">
+                    <i class="bi bi-check-circle me-1"></i>Completed
+                </span>
+            }
+        </div>
+
+    </div>
+</div>
 <!-- Stats Row -->
 <div class="row g-3 mb-4">
     <div class="col-sm-6 col-md-3">

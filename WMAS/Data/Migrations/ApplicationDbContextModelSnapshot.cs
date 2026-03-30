@@ -259,7 +259,8 @@ namespace WMAS.Data.Migrations
 
                     b.HasKey("AttendanceId");
 
-                    b.HasIndex("EmployeeId");
+                    b.HasIndex("EmployeeId", "Date")
+                        .IsUnique();
 
                     b.ToTable("Attendances");
                 });

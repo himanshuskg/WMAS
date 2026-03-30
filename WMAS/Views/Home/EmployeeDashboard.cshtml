@@ -28,8 +28,26 @@
                 </span>
             }
         </small>
-    </div>
+    </div>@{
+    string statusText = "Not Checked In";
+    string statusClass = "bg-secondary";
+
+    if (todayAtt != null && todayAtt.CheckOutTime == null)
+    {
+        statusText = "Logged In";
+        statusClass = "bg-success";
+    }
+    else if (todayAtt != null && todayAtt.CheckOutTime != null)
+    {
+        statusText = "Logged Out";
+        statusClass = "bg-primary";
+    }
+}
+
+<div class="d-flex gap-2">
     <span class="badge bg-secondary fs-6 px-3 py-2">Employee</span>
+    <span class="badge @statusClass fs-6 px-3 py-2">@statusText</span>
+</div>
 </div>
 
 <!-- Today's Attendance Status -->
@@ -70,7 +88,7 @@
                 }
                 else
                 {
-                    var duration = todayAtt.CheckOutTime.Value - todayAtt.CheckInTime!.Value;
+                    var duration = (todayAtt.CheckOutTime ?? DateTime.Now) - (todayAtt.CheckInTime ?? DateTime.Now);
                     <div class="d-flex align-items-center gap-3">
                         <div class="bg-primary bg-opacity-10 rounded-3 p-3">
                             <i class="bi bi-check-circle fs-3 text-primary"></i>
@@ -93,8 +111,10 @@
             <div class="col-md-6 mt-3 mt-md-0 text-md-end">
                 @if (todayAtt == null)
                 {
-                    <form asp-controller="Attendance" asp-action="CheckIn"
-                          method="post" class="d-inline">
+                    <small class="text-muted d-block mt-1">
+                        Click "Check In" to start your day
+                    </small>
+                    <form asp-controller="Attendance" asp-action="CheckIn" method="post" class="d-inline">
                         @Html.AntiForgeryToken()
                         <button type="submit"
                                 class="btn btn-success px-4">

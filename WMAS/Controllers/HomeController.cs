@@ -49,6 +49,7 @@ namespace WMAS.Controllers
         [Authorize(Roles = "HR")]
         public async Task<IActionResult> HRDashboard()
         {
+            await SetAttendanceStatus();
             ViewBag.TotalEmployees = await _context.Employees.CountAsync();
             ViewBag.ActiveEmployees = await _context.Employees.CountAsync(e => e.IsActive);
             ViewBag.PendingLeaves = await _context.Leaves.CountAsync(l => l.Status == "Pending");
@@ -65,6 +66,7 @@ namespace WMAS.Controllers
         [Authorize(Roles = "Manager")]
         public async Task<IActionResult> ManagerDashboard()
         {
+            await SetAttendanceStatus();
             var userId = _userManager.GetUserId(User);
             var manager = await _context.Employees.FirstOrDefaultAsync(e => e.UserId == userId);
 
@@ -84,6 +86,7 @@ namespace WMAS.Controllers
         [Authorize(Roles = "Employee")]
         public async Task<IActionResult> EmployeeDashboard()
         {
+            await SetAttendanceStatus();
             var userId = _userManager.GetUserId(User);
             var employee = await _context.Employees.Include(e => e.Department).Include(e => e.Designation).FirstOrDefaultAsync(e => e.UserId == userId);
 
@@ -143,5 +146,22 @@ namespace WMAS.Controllers
             return RedirectToAction(nameof(Index));
         }
         public IActionResult Privacy() => View();
+        private async Task SetAttendanceStatus()
+        {
+            var userId = _userManager.GetUserId(User);
+            if (string.IsNullOrEmpty(userId))
+            {
+                ViewBag.TodayAtt = null;
+                return;
+            }
+            var employee = await _context.Employees.FirstOrDefaultAsync(e => e.UserId == userId);
+            if (employee == null)
+            {
+                ViewBag.TodayAtt = null;
+                return;
+            }
+            var todayAtt = await _context.Attendances.FirstOrDefaultAsync(a =>a.EmployeeId == employee.EmployeeId && a.Date == DateTime.Today);
+            ViewBag.TodayAtt = todayAtt;
+        }
     }
 }

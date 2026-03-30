@@ -33,6 +33,7 @@ namespace WMAS.Data
                 entity.Property(e => e.Deductions).HasPrecision(18, 2);
                 entity.Property(e => e.NetSalary).HasPrecision(18, 2);
             });
+            builder.Entity<Attendance>().HasIndex(a => new { a.EmployeeId, a.Date }).IsUnique();
             //Disable Cascade delete
             builder.Entity<Employee>().HasOne(e => e.Department)
                                       .WithMany().HasForeignKey(e => e.DepartmentId)
